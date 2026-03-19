@@ -6,14 +6,12 @@
   <title>Twitch Chat | vadyms22</title>
   <style>
     :root {
-      --bg: #0b1020;
       --panel: rgba(10, 16, 32, 0.88);
       --panel-border: rgba(148, 163, 184, 0.18);
       --text: #f8fafc;
       --muted: #b8c3d9;
       --accent: #00d1b2;
       --accent-2: #7dd3fc;
-      --danger: #fb7185;
       --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
     }
 
@@ -135,11 +133,6 @@
       font-weight: 600;
       text-decoration: none;
       cursor: pointer;
-      transition: transform 0.18s ease, opacity 0.18s ease, background 0.18s ease;
-    }
-
-    .button:hover {
-      transform: translateY(-1px);
     }
 
     .button-primary {
@@ -161,13 +154,6 @@
       min-height: 760px;
     }
 
-    .chat-header {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      align-items: center;
-    }
-
     .chat-title {
       margin: 0;
       font-size: 1.05rem;
@@ -185,11 +171,6 @@
       border: 0;
       border-radius: 18px;
       background: #0f172a;
-    }
-
-    code {
-      font-family: Consolas, "Courier New", monospace;
-      font-size: 0.95em;
     }
 
     @media (max-width: 920px) {
@@ -219,7 +200,7 @@
       <div class="meta">
         <div class="meta-row">
           <span class="meta-label">Channel</span>
-          <p class="meta-value" id="channel-name">vadyms22</p>
+          <p class="meta-value">vadyms22</p>
         </div>
         <div class="meta-row">
           <span class="meta-label">Current parent</span>
@@ -231,24 +212,18 @@
         </div>
       </div>
 
-      <p class="hint" id="info-box">
-        Preparing Twitch chat iframe...
-      </p>
+      <p class="hint" id="info-box">Preparing Twitch chat iframe...</p>
 
       <div class="actions">
         <button class="button button-primary" id="reload-chat" type="button">Reload chat</button>
-        <a class="button button-secondary" id="open-popout" href="https://www.twitch.tv/popout/vadyms22/chat" target="_blank" rel="noreferrer">
-          Open popout
-        </a>
+        <a class="button button-secondary" id="open-popout" href="https://www.twitch.tv/popout/vadyms22/chat" target="_blank" rel="noreferrer">Open popout</a>
       </div>
     </section>
 
     <section class="card chat-panel">
-      <div class="chat-header">
-        <div>
-          <h2 class="chat-title">Twitch messages</h2>
-          <p class="chat-status" id="chat-status">Waiting for initialization...</p>
-        </div>
+      <div>
+        <h2 class="chat-title">Twitch messages</h2>
+        <p class="chat-status" id="chat-status">Waiting for initialization...</p>
       </div>
 
       <iframe
@@ -256,8 +231,8 @@
         class="chat-frame"
         title="Twitch chat for vadyms22"
         loading="lazy"
-        allow="clipboard-write"
-      ></iframe>
+        allow="clipboard-write">
+      </iframe>
     </section>
   </main>
 
@@ -271,76 +246,32 @@
       infoBox: document.getElementById("info-box"),
       status: document.getElementById("chat-status"),
       reloadButton: document.getElementById("reload-chat"),
-      openPopout: document.getElementById("open-popout"),
+      openPopout: document.getElementById("open-popout")
     };
 
-    function getParentDomain() {
-      if (window.location.hostname) {
-        return window.location.hostname;
-      }
-
-      return "localhost";
-    }
-
-    function getEmbedUrl(parentDomain) {
-      const params = new URLSearchParams({
-        parent: parentDomain,
-      });
-
-      return `https://www.twitch.tv/embed/${channel}/chat?${params.toString()}`;
-    }
-
-    function setMessage(text, isWarning = false) {
+    function setMessage(text, isWarning) {
       elements.infoBox.textContent = text;
-      elements.infoBox.classList.toggle("is-warning", isWarning);
+      elements.infoBox.classList.toggle("is-warning", Boolean(isWarning));
     }
 
     function renderChat() {
+      const hostname = window.location.hostname || "localhost";
       const protocol = window.location.protocol;
-      const parentDomain = getParentDomain();
-      const isFileProtocol = protocol === "file:";
-      const isLocalhost =
-        parentDomain === "localhost" ||
-        parentDomain === "127.0.0.1" ||
-        parentDomain === "::1";
 
-      elements.parentValue.textContent = parentDomain;
-      elements.openPopout.href = `https://www.twitch.tv/popout/${channel}/chat`;
+      elements.parentValue.textContent = hostname;
+      elements.modeValue.textContent = protocol + "//" + hostname;
+      elements.openPopout.href = "https://www.twitch.tv/popout/" + channel + "/chat";
 
-      if (isFileProtocol) {
-        elements.modeValue.textContent = "file://";
-        elements.status.textContent = "Embed is blocked when the page is opened as a local file";
+      if (protocol === "file:") {
+        elements.status.textContent = "Embed is blocked on file://";
         elements.frame.removeAttribute("src");
-        setMessage(
-          "Twitch embed requires a valid parent domain. Open this page through localhost or GitHub Pages.",
-          true
-        );
+        setMessage("Open this page through localhost or GitHub Pages, not as a local file.", true);
         return;
       }
 
-      elements.modeValue.textContent = `${protocol}//${parentDomain}`;
-      elements.status.textContent = isLocalhost
-        ? "Local mode: the chat should load through localhost"
-        : "Hosted mode: the chat loads with the current domain";
-
-      elements.frame.src = getEmbedUrl(parentDomain);
-
-      if (parentDomain.endsWith(".github.io")) {
-        setMessage(
-          `GitHub Pages detected. Twitch parent is set to ${parentDomain}. If chat stays blank, hard refresh the page and make sure GitHub Pages deployed the latest commit.`
-        );
-        return;
-      }
-
-      if (isLocalhost) {
-        setMessage(
-          "Running on localhost is fine for development. If you publish this page online, Twitch expects the same real domain in the parent parameter."
-        );
-      } else {
-        setMessage(
-          "The chat is connected through the official Twitch iframe. If the embed does not open, make sure the page domain matches the value sent as parent."
-        );
-      }
+      elements.status.textContent = "Chat should load below";
+      elements.frame.src = "https://www.twitch.tv/embed/" + channel + "/chat?parent=" + encodeURIComponent(hostname);
+      setMessage("Twitch parent is set to " + hostname + ". If chat is blank, refresh the page with Ctrl+F5.");
     }
 
     elements.reloadButton.addEventListener("click", renderChat);
