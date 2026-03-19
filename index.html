@@ -261,6 +261,90 @@
     </section>
   </main>
 
-  <script src="./app.js"></script>
+  <script>
+    const channel = "vadyms22";
+
+    const elements = {
+      frame: document.getElementById("twitch-chat"),
+      parentValue: document.getElementById("parent-value"),
+      modeValue: document.getElementById("mode-value"),
+      infoBox: document.getElementById("info-box"),
+      status: document.getElementById("chat-status"),
+      reloadButton: document.getElementById("reload-chat"),
+      openPopout: document.getElementById("open-popout"),
+    };
+
+    function getParentDomain() {
+      if (window.location.hostname) {
+        return window.location.hostname;
+      }
+
+      return "localhost";
+    }
+
+    function getEmbedUrl(parentDomain) {
+      const params = new URLSearchParams({
+        parent: parentDomain,
+      });
+
+      return `https://www.twitch.tv/embed/${channel}/chat?${params.toString()}`;
+    }
+
+    function setMessage(text, isWarning = false) {
+      elements.infoBox.textContent = text;
+      elements.infoBox.classList.toggle("is-warning", isWarning);
+    }
+
+    function renderChat() {
+      const protocol = window.location.protocol;
+      const parentDomain = getParentDomain();
+      const isFileProtocol = protocol === "file:";
+      const isLocalhost =
+        parentDomain === "localhost" ||
+        parentDomain === "127.0.0.1" ||
+        parentDomain === "::1";
+
+      elements.parentValue.textContent = parentDomain;
+      elements.openPopout.href = `https://www.twitch.tv/popout/${channel}/chat`;
+
+      if (isFileProtocol) {
+        elements.modeValue.textContent = "file://";
+        elements.status.textContent = "Embed is blocked when the page is opened as a local file";
+        elements.frame.removeAttribute("src");
+        setMessage(
+          "Twitch embed requires a valid parent domain. Open this page through localhost or GitHub Pages.",
+          true
+        );
+        return;
+      }
+
+      elements.modeValue.textContent = `${protocol}//${parentDomain}`;
+      elements.status.textContent = isLocalhost
+        ? "Local mode: the chat should load through localhost"
+        : "Hosted mode: the chat loads with the current domain";
+
+      elements.frame.src = getEmbedUrl(parentDomain);
+
+      if (parentDomain.endsWith(".github.io")) {
+        setMessage(
+          `GitHub Pages detected. Twitch parent is set to ${parentDomain}. If chat stays blank, hard refresh the page and make sure GitHub Pages deployed the latest commit.`
+        );
+        return;
+      }
+
+      if (isLocalhost) {
+        setMessage(
+          "Running on localhost is fine for development. If you publish this page online, Twitch expects the same real domain in the parent parameter."
+        );
+      } else {
+        setMessage(
+          "The chat is connected through the official Twitch iframe. If the embed does not open, make sure the page domain matches the value sent as parent."
+        );
+      }
+    }
+
+    elements.reloadButton.addEventListener("click", renderChat);
+    renderChat();
+  </script>
 </body>
 </html>
