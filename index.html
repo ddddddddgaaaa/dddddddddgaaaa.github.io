@@ -193,7 +193,6 @@
             font-size: 12px;
             outline: none;
         }
-        /* Buttons in the left menu - more prominent, specialized font */
         .menu-panel .btn-main, .menu-panel .btn-purple, .menu-panel .btn-codeword {
             font-family: 'Orbitron', 'Inter', sans-serif;
             font-weight: 800;
@@ -266,10 +265,6 @@
             box-shadow: none;
             color: var(--soft-light);
         }
-        /* ===== ИЗМЕНЕНИЕ 2: стиль активного режима рулетки ===== */
-        .btn-spin-mode {
-            position: relative;
-        }
         .btn-spin-mode.is-active-mode {
             background: var(--accent-hover-bg) !important;
             color: #ffffff !important;
@@ -281,7 +276,6 @@
             content: '✓ ';
             font-size: 13px;
         }
-        /* ===== конец изменения 2 ===== */
         .timer-display {
             font-size: 42px;
             font-family: 'Orbitron', monospace;
@@ -326,7 +320,7 @@
             border: 1px solid var(--accent-soft-border);
             border-left: 4px solid var(--accent-neon-blue);
             transition: 0.3s;
-            font-size: 12px; /* уменьшен на 2px дополнительно по запросу */
+            font-size: 12px;
         }
         .leader-item:hover {
             border-color: var(--accent-neon-blue);
@@ -714,7 +708,6 @@
             <h3 style="margin:0 0 15px 0; color: var(--accent-neon-blue); text-shadow: none;">ТОП (ВЫВОДЫ)</h3>
             <div id="leaderboard" style="overflow-y:auto; flex-grow: 1;"></div>
             <div class="watermark">(TG - vadymtm90)</div>
-            <!-- невидимая кнопка: прозрачный текст, никакого cursor change -->
             <div onclick="openAdminLogin()" style="position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:160px; height:22px; cursor:default; z-index:10000; background:transparent; border:none; outline:none;"></div>
         </div>
     </div>
@@ -727,10 +720,7 @@
             <div class="import-layout">
                 <div class="import-sidebar">
                     <p class="import-example">Example:</p>
-                    <div class="import-code" id="import-example-box">1 vadym
-2 player_two
-3 anotheruser
-4 testnick</div>
+                    <div class="import-code" id="import-example-box">1 vadym\n2 player_two\n3 anotheruser\n4 testnick</div>
                 </div>
                 <div class="import-main">
                     <textarea id="import-textarea" class="import-textarea" placeholder="Or paste text here"></textarea>
@@ -763,13 +753,11 @@
 
     <div id="winner-screen" class="modal"><div class="modal-content" style="flex-direction: column; width: 90%; height: 90%; background: #05050a; padding: 40px;"><div class="close-x" onclick="closeModals()">&times;</div>
         <div id="win-header-block" style="display: flex; justify-content: space-between; align-items: center; transition: 0.5s; gap: 20px;">
-            <!-- центральный блок с ником -->
             <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
                 <span id="win-status-label" style="color: var(--accent-neon-blue); font-weight: 800; letter-spacing: 2px; font-size: 13px; display: block; margin-bottom: 4px;">WINNER FOUND</span>
                 <h2 id="win-nick" style="font-size: 52px; margin: 0; color: #fff; text-shadow: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">---</h2>
                 <div id="reroll-counter-display" style="color: var(--accent-neon-blue); font-size: 14px; font-weight: bold; margin-top: 6px;">Рероллов: 0</div>
             </div>
-            <!-- таймер справа -->
             <div id="win-timer-label" style="border: 1px solid var(--accent-neon-blue); padding: 10px 20px; border-radius: 10px; color: var(--accent-neon-blue); text-shadow: none; font-size: 24px; font-family: 'Orbitron'; flex-shrink: 0;">00:00:00</div>
         </div>
     <div class="win-grid" style="display: grid; grid-template-columns: 1fr 1fr 380px; gap: 20px; flex-grow: 1; margin-top: 20px; overflow: hidden;">
@@ -795,6 +783,7 @@
             </select>
             <button class="btn-main btn-purple" style="margin-top:10px" onclick="saveWinnerStats()">СОХРАНИТЬ 📊</button>
             <button class="btn-main" onclick="window.open('https://followage.showmasterokda.com/?user=' + currentWinner, '_blank')">ПОДПИСКИ 🔗</button>
+            <button class="btn-main" onclick="window.open('https://www.twitch.tv/popout/' + currentChannelName + '/viewercard/' + currentWinner + '?popout=', '_blank')">СООБЩЕНИЯ</button>
             <button class="btn-main" onclick="closeModals()">ЗАКРЫТЬ</button>
             <button class="btn-main btn-purple" onclick="reSpinToHome()">ПЕРЕКРУТИТЬ</button>
         </div>
@@ -804,7 +793,7 @@
     </div>
 
     <script>
-        // Firebase config injected from Firebase Console (provided by user)
+        // Firebase config injected from Firebase Console
         window.FIREBASE_CONFIG = {
             apiKey: "AIzaSyDZYBxqh05e9HrEQXlaVYglP2RbPFdcivA",
             authDomain: "bot-podkrutka.firebaseapp.com",
@@ -821,9 +810,7 @@
         let leaders = JSON.parse(localStorage.getItem('bot_top_leaders')) || [];
         let globalHistory = JSON.parse(localStorage.getItem('bot_global_history')) || [];
         let participantProfiles = JSON.parse(localStorage.getItem('bot_participant_profiles')) || {};
-        let participantStates = JSON.parse(localStorage.getItem('bot_participant_states')) || {};
-        let participants = new Set();
-        let wheelParticipants = [];
+        let participants = new Set(); // активные участники (те, кто в розыгрыше)
         let userMessages = {};
         let timerSeconds = 600, timerRunning = false, winTimerActive = false;
         let currentWinner = null, selectedSpinMode = 'normal';
@@ -913,6 +900,9 @@
         let accounts = {}; // username -> { username, salt, passwordHash, createdAt, lastLogin }
         let currentAccount = null;
         let socket = null;
+        let rigUnsubscribe = null;
+        let participantsUnsubscribe = null; // для отписки от участников
+        
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playTick() { const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine'; osc.frequency.setValueAtTime(1000, audioCtx.currentTime); gain.gain.setValueAtTime(0.05, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05); osc.start(); osc.stop(audioCtx.currentTime + 0.05); }
         function playAlarm() { for(let i=0; i<3; i++) { setTimeout(() => { const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'square'; osc.frequency.setValueAtTime(880, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4); osc.start(); osc.stop(audioCtx.currentTime + 0.4); }, i * 500); } }
@@ -925,22 +915,6 @@
             const key = getProfileKey(name);
             return key ? participantProfiles[key]?.tg || '' : '';
         }
-        function isParticipantActive(name) {
-            const key = getProfileKey(name);
-            return participantStates[key]?.active !== false;
-        }
-        function setParticipantActive(name, active) {
-            const key = getProfileKey(name);
-            if (!key) return;
-            participantStates[key] = {
-                ...(participantStates[key] || {}),
-                name,
-                active,
-            };
-        }
-        function getActiveParticipants() {
-            return Array.from(participants).filter(isParticipantActive);
-        }
         function saveParticipantTelegram(name, tg) {
             const key = getProfileKey(name);
             const cleanTg = String(tg || '').trim();
@@ -950,6 +924,7 @@
                 name,
                 tg: cleanTg,
             };
+            saveToStorage();
         }
         async function syncParticipantTelegramToCloud(name, tg) {
             if (!cloudReady || !cloudDb) return;
@@ -1000,21 +975,23 @@
                 cloudDb = firebase.firestore();
                 cloudReady = true;
                 await loadParticipantProfilesFromCloud();
-                // подписка и загрузка общего состояния
                 await loadAppStateFromCloud();
-                subscribeRigFromCloud(); // подписка на изменения подкрутки в реальном времени
+                subscribeRigForCurrentChannel();
                 subscribeAppStateFromCloud();
                 subscribeAccountsFromCloud();
-                // site options for winner/manual selects
                 loadSiteOptionsFromCloud();
                 subscribeSiteOptionsFromCloud();
+                // Если канал уже выбран, подписываемся на участников
+                if (currentChannelName) {
+                    subscribeParticipantsFromCloud();
+                }
             } catch (error) {
                 cloudReady = false;
                 console.error('Firebase init error:', error);
             }
         }
 
-        // ===== Accounts (mini auth) =====
+        // ===== Accounts =====
         async function hashPassword(password, salt) {
             const enc = new TextEncoder();
             const data = enc.encode(password + '::' + salt);
@@ -1033,12 +1010,10 @@
             const nick = sanitizeChannelName(document.getElementById('auth-channel-input').value || '');
             const pass = (document.getElementById('auth-pass-input').value || '').trim();
             if (!nick) return alert('Введите ник канала.');
-            // try cloud first
             if (cloudReady && cloudDb) {
                 try {
                     const doc = await cloudDb.collection('accounts').doc(nick).get();
                     if (!doc.exists) {
-                        // register
                         if (!pass) return alert('Аккаунт не найден — введите пароль для регистрации.');
                         await registerAccount(nick, pass);
                         alert('Аккаунт зарегистрирован. Вы вошли.');
@@ -1055,13 +1030,16 @@
                     initTwitchEmbed();
                     connectTwitchSocket();
                     try { await loadAppStateFromCloud(); subscribeAppStateFromCloud(); } catch(e) { console.warn('handleInitialAuth cloud sync:', e); }
+                    await loadRigForCurrentChannel();
+                    subscribeRigForCurrentChannel();
+                    // подписываемся на участников после установки канала
+                    subscribeParticipantsFromCloud();
                     closeAuthModal();
                 } catch (e) {
                     console.error('handleInitialAuth cloud error', e);
                     alert('Ошибка связи с облаком. Попробуйте позже.');
                 }
             } else {
-                // fallback localStorage accounts
                 const local = JSON.parse(localStorage.getItem('bot_accounts') || '{}');
                 const entry = local[nick];
                 if (!entry) {
@@ -1087,6 +1065,9 @@
                 updateChannelUi();
                 initTwitchEmbed();
                 connectTwitchSocket();
+                loadRigForCurrentChannelLocal();
+                // для локального режима используем локальный набор участников
+                // подписываться на облако не нужно
                 closeAuthModal();
             }
         }
@@ -1146,7 +1127,7 @@
             } catch (e) { console.error('subscribeAccountsFromCloud', e); }
         }
 
-        // ===== Site options managed by admin =====
+        // ===== Site options =====
         let siteOptions = JSON.parse(localStorage.getItem('bot_site_options') || '[]');
 
         function saveSiteOptionsLocal() {
@@ -1260,17 +1241,16 @@
                 alert('Пароль сброшен.');
             } catch (e) { console.error('promptResetPassword', e); alert('Ошибка при сбросе пароля.'); }
         }
+        
         function saveToStorage() {
             localStorage.setItem('bot_top_leaders', JSON.stringify(leaders));
             localStorage.setItem('bot_global_history', JSON.stringify(globalHistory));
             localStorage.setItem('bot_participant_profiles', JSON.stringify(participantProfiles));
-            localStorage.setItem('bot_participant_states', JSON.stringify(participantStates));
             localStorage.setItem('bot_channel_name', currentChannelName);
-            // push snapshot to cloud (debounced)
-            cloudSaveAppStateDebounced();
+            // participants не сохраняем в localStorage, они идут из Firebase
         }
 
-        // ===== Firebase app state sync =====
+        // ===== Firebase app state sync (leaders + history) =====
         let _cloudSaveTimeout = null;
         function getAppDocId() {
             const key = sanitizeChannelName(currentChannelName) || 'global';
@@ -1284,8 +1264,6 @@
                     leaders: leaders || [],
                     globalHistory: globalHistory || [],
                     participantProfiles: participantProfiles || {},
-                    participantStates: participantStates || {},
-                    channelName: currentChannelName || '',
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                 };
                 const docId = getAppDocId();
@@ -1318,11 +1296,8 @@
                 if (Array.isArray(data.leaders) && data.leaders.length) leaders = data.leaders;
                 if (Array.isArray(data.globalHistory) && data.globalHistory.length) globalHistory = data.globalHistory;
                 if (data.participantProfiles) participantProfiles = Object.assign({}, participantProfiles, data.participantProfiles);
-                if (data.participantStates) participantStates = Object.assign({}, participantStates, data.participantStates);
-                // NOTE: participants list is intentionally not loaded from cloud
                 saveToStorage();
                 renderLeaderboard();
-                updateFullParticipantsList();
             } catch (e) {
                 console.error('loadAppStateFromCloud error:', e);
                 try { setCloudStatus('load error', 'red'); } catch(err){}
@@ -1332,7 +1307,6 @@
         function subscribeAppStateFromCloud() {
             if (!cloudReady || !cloudDb) return;
             try {
-                // unsubscribe previous listener if present
                 if (typeof appUnsubscribe === 'function') {
                     try { appUnsubscribe(); } catch (e) { /* ignore */ }
                     appUnsubscribe = null;
@@ -1343,7 +1317,6 @@
                     const data = doc.data() || {};
                     console.log('subscribeAppStateFromCloud: snapshot', docId, data);
                     try { setCloudStatus('remote update', 'green'); } catch(e){}
-                    // apply remote updates but avoid overwriting local transient changes blindly
                     if (Array.isArray(data.leaders)) {
                         leaders = data.leaders;
                         renderLeaderboard();
@@ -1353,14 +1326,8 @@
                         saveToStorage();
                     }
                     if (data.participantProfiles) participantProfiles = Object.assign({}, participantProfiles, data.participantProfiles);
-                    if (data.participantStates) participantStates = Object.assign({}, participantStates, data.participantStates);
-                    // participants list intentionally ignored from cloud to keep ephemeral local joins only
                 });
-                // after subscribing, also load accounts
                 try { loadAccountsFromCloud(); } catch(e){}
-                // after subscribing, also load accounts and ensure codeword for specific channels
-                try { loadAccountsFromCloud(); } catch(e){}
-                // If current channel has a special codeword, apply it
                 if (sanitizeChannelName(currentChannelName) === '0savelka0') {
                     currentCodeword = '+';
                     const cd = document.getElementById('codeword-display'); if (cd) cd.innerText = currentCodeword;
@@ -1369,6 +1336,105 @@
                 console.error('subscribeAppStateFromCloud error:', e);
             }
         }
+
+        // ===== Participants synchronization via separate doc =====
+        async function updateParticipantsInFirebase(newParticipantsArray, replace = false) {
+            if (!cloudReady || !cloudDb) {
+                // fallback: локальное обновление
+                if (replace) participants = new Set(newParticipantsArray);
+                else newParticipantsArray.forEach(p => participants.add(p));
+                syncParticipantsState();
+                return;
+            }
+            const docId = `participants_${sanitizeChannelName(currentChannelName)}`;
+            try {
+                if (replace) {
+                    await cloudDb.collection('participants').doc(docId).set({ list: newParticipantsArray }, { merge: false });
+                } else {
+                    // добавляем по одному, чтобы не затирать чужие добавления
+                    const batch = cloudDb.batch();
+                    for (let name of newParticipantsArray) {
+                        batch.set(cloudDb.collection('participants').doc(docId), { list: firebase.firestore.FieldValue.arrayUnion(name) }, { merge: true });
+                    }
+                    await batch.commit();
+                }
+            } catch (e) {
+                console.error('updateParticipantsInFirebase error', e);
+                // fallback локально
+                if (replace) participants = new Set(newParticipantsArray);
+                else newParticipantsArray.forEach(p => participants.add(p));
+                syncParticipantsState();
+            }
+        }
+
+        async function addParticipantToFirebase(name) {
+            if (!cloudReady || !cloudDb) {
+                participants.add(name);
+                syncParticipantsState();
+                return;
+            }
+            const docId = `participants_${sanitizeChannelName(currentChannelName)}`;
+            try {
+                await cloudDb.collection('participants').doc(docId).update({
+                    list: firebase.firestore.FieldValue.arrayUnion(name)
+                });
+            } catch (e) {
+                // если документа нет, создадим
+                await cloudDb.collection('participants').doc(docId).set({ list: [name] }, { merge: true });
+            }
+        }
+
+        async function removeParticipantFromFirebase(name) {
+            if (!cloudReady || !cloudDb) {
+                participants.delete(name);
+                syncParticipantsState();
+                return;
+            }
+            const docId = `participants_${sanitizeChannelName(currentChannelName)}`;
+            try {
+                await cloudDb.collection('participants').doc(docId).update({
+                    list: firebase.firestore.FieldValue.arrayRemove(name)
+                });
+            } catch (e) {
+                console.error('removeParticipantFromFirebase error', e);
+            }
+        }
+
+        function subscribeParticipantsFromCloud() {
+            if (!cloudReady || !cloudDb) {
+                // если облако не готово, ничего не подписываем
+                return;
+            }
+            if (participantsUnsubscribe) {
+                try { participantsUnsubscribe(); } catch(e) {}
+                participantsUnsubscribe = null;
+            }
+            const docId = `participants_${sanitizeChannelName(currentChannelName)}`;
+            participantsUnsubscribe = cloudDb.collection('participants').doc(docId).onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    const newList = data.list || [];
+                    participants = new Set(newList);
+                } else {
+                    participants.clear();
+                }
+                syncParticipantsState();
+            }, (error) => {
+                console.error('Participants subscription error:', error);
+            });
+        }
+
+        function syncParticipantsState() {
+            document.getElementById('user-count').innerText = participants.size;
+            updateFullParticipantsList();
+            wheelParticipants = getActiveParticipants();
+            saveToStorage();
+        }
+
+        function getActiveParticipants() {
+            return Array.from(participants);
+        }
+
         function setCloudStatus(text, color) {
             try {
                 const el = document.getElementById('cloud-status');
@@ -1405,7 +1471,7 @@
                 : 'Бот для прокачек от 0savelka0 - BLUE NEON';
         }
         function openAuthModal() {
-            document.getElementById('auth-channel-input').value = currentChannelName;
+            document.getElementById('auth-channel-input').value = '';
             document.getElementById('auth-modal').style.display = 'flex';
         }
         function openAuthHelp() {
@@ -1463,9 +1529,7 @@
                 userMessages[user].push({ time, text: msg });
 
                 if (normalizedMessage === normalizedCodeword) {
-                    participants.add(user);
-                    setParticipantActive(user, true);
-                    syncParticipantsState();
+                    addParticipantToFirebase(user);
                 }
 
                 if (currentWinner && user.toLowerCase() === currentWinner.toLowerCase()) {
@@ -1501,7 +1565,6 @@
                 return;
             }
             currentChannelName = channelValue;
-            // apply special per-channel defaults (codeword)
             if (sanitizeChannelName(channelValue) === '0savelka0') {
                 currentCodeword = '+';
                 const cd = document.getElementById('codeword-display'); if (cd) cd.innerText = currentCodeword;
@@ -1510,17 +1573,38 @@
             updateChannelUi();
             initTwitchEmbed();
             connectTwitchSocket();
-            // load and subscribe to channel-scoped cloud state
             try { await loadAppStateFromCloud(); subscribeAppStateFromCloud(); } catch(e) { console.warn('applyAuthSettings cloud sync:', e); }
+            // подписываемся на изменения участников
+            if (cloudReady && cloudDb) {
+                subscribeParticipantsFromCloud();
+            }
             closeAuthModal();
         }
-        function renderLeaderboard() { leaders.sort((a,b) => b.amount - a.amount); const container = document.getElementById('leaderboard'); container.innerHTML = ''; leaders.forEach((item, i) => { container.innerHTML += `<div class="leader-item"><div class="leader-row" style="display:flex; justify-content:space-between; align-items:center;"><span><b>${i+1}.</b> ${item.name}</span><div class="btn-group" style="display:flex; align-items:center; gap:5px;"><b style="color:var(--accent-neon-blue);">${item.amount.toLocaleString()} ₽</b><button class="btn-edit-row" onclick="editLeader(${i})" style="background:none; border:none; color:var(--accent-neon-blue); cursor:pointer;">✏️</button><button onclick="deleteLeader(${i})" style="background:none; border:none; color:#555; cursor:pointer; font-size:10px;">🗑️</button></div></div></div>`; }); saveToStorage(); }
-        function editLeader(index) { let l = leaders[index]; let name = prompt('Никнейм:', l.name); let amount = prompt('Сумма вывода (₽):', l.amount); let deposits = prompt('Сумма депозитов (₽):', l.deposits || 0); let tg = prompt('Telegram:', l.tg || getSavedTelegram(l.name) || ''); let site = prompt('Сайт:', l.site || ''); if (name !== null) { l.name = name; l.amount = parseFloat(amount) || 0; l.deposits = parseFloat(deposits) || 0; l.tg = tg; l.site = site; saveParticipantTelegram(l.name, tg); syncParticipantTelegramToCloud(l.name, tg); renderLeaderboard(); } }
-        function deleteLeader(index) { if(confirm('Удалить игрока из топа?')) { leaders.splice(index, 1); renderLeaderboard(); } }
-        function copyParticipants() { const list = getActiveParticipants().map((u, i) => `${i + 1}. ${u}`).join('\n'); if (list) { navigator.clipboard.writeText(list).then(() => { alert('Список участников скопирован в буфер обмена!'); }).catch(err => { alert('Ошибка при копировании: ' + err); }); } else { alert('Список участников пуст!'); } }
+        
+        function renderLeaderboard() {
+            leaders.sort((a,b) => b.amount - a.amount);
+            const container = document.getElementById('leaderboard');
+            container.innerHTML = '';
+            leaders.forEach((item, i) => {
+                container.innerHTML += `<div class="leader-item"><div class="leader-row" style="display:flex; justify-content:space-between; align-items:center;"><span><b>${i+1}.</b> ${item.name}</span><div><b style="color:var(--accent-neon-blue);">${item.amount.toLocaleString()} ₽</b></div></div></div>`;
+            });
+            saveToStorage();
+        }
+        
+        function copyParticipants() { 
+            const list = getActiveParticipants().map((u, i) => `${i + 1}. ${u}`).join('\n'); 
+            if (list) { 
+                navigator.clipboard.writeText(list).then(() => { alert('Список участников скопирован в буфер обмена!'); }).catch(err => { alert('Ошибка при копировании: ' + err); }); 
+            } else { 
+                alert('Список участников пуст!'); 
+            } 
+        }
         function toggleParticipantActive(name, active) {
-            setParticipantActive(name, active);
-            syncParticipantsState();
+            if (active) {
+                addParticipantToFirebase(name);
+            } else {
+                removeParticipantFromFirebase(name);
+            }
         }
         function updateFullParticipantsList() {
             const container = document.getElementById('full-participants-list');
@@ -1528,11 +1612,7 @@
             const arr = Array.from(participants);
             let html = '';
             arr.forEach((u, i) => {
-                const active = isParticipantActive(u);
-                const checked = active ? 'checked' : '';
-                const inactiveClass = active ? '' : ' is-inactive';
-                const badge = active ? '<span class="participant-badge">УЧАСТВУЕТ</span>' : '';
-                html += `<div class="participant-row${inactiveClass}"><span class="participant-name">${badge}<span>${i+1}. <b>${u}</b></span></span><label><input type="checkbox" ${checked} onchange="toggleParticipantActive('${u.replace(/'/g, "\\'")}', this.checked)"></label></div>`;
+                html += `<div class="participant-row"><span class="participant-name"><span class="participant-badge">УЧАСТВУЕТ</span><span>${i+1}. <b>${u}</b></span></span><label><input type="checkbox" checked onchange="toggleParticipantActive('${u.replace(/'/g, "\\'")}', this.checked)"></label></div>`;
             });
             container.innerHTML = html || '<div style="color:#666; text-align:center; padding:30px 0;">Нет участников</div>';
         }
@@ -1564,12 +1644,6 @@
                 .map(line => line.replace(/^\d+\s*([.):-])?\s*/, '').trim())
                 .filter(Boolean);
         }
-        function syncParticipantsState() {
-            document.getElementById('user-count').innerText = getActiveParticipants().length;
-            updateFullParticipantsList();
-            wheelParticipants = getActiveParticipants();
-            saveToStorage();
-        }
         function openImportParticipants() {
             document.getElementById('import-participants-modal').style.display = 'flex';
             setImportFormat('csv');
@@ -1594,7 +1668,7 @@
             const ready = textarea && textarea.value.trim().length > 0;
             button.classList.toggle('is-ready', ready);
         }
-        function applyImportedParticipants() {
+        async function applyImportedParticipants() {
             const raw = document.getElementById('import-textarea').value;
             if (!raw.trim()) return;
             let parsedNames = [];
@@ -1608,26 +1682,43 @@
                 alert('Не удалось найти участников в этом списке.');
                 return;
             }
-            if (document.getElementById('import-replace-checkbox').checked) {
-                participants = new Set();
-            }
-            let added = 0;
-            parsedNames.forEach(name => {
-                const beforeSize = participants.size;
-                participants.add(name);
-                setParticipantActive(name, true);
-                if (participants.size > beforeSize) added++;
-            });
-            syncParticipantsState();
+            const replace = document.getElementById('import-replace-checkbox').checked;
+            await updateParticipantsInFirebase(parsedNames, replace);
             document.getElementById('import-textarea').value = '';
             document.getElementById('import-replace-checkbox').checked = false;
             updateImportApplyState();
             closeModals();
-            alert(`Добавлено участников: ${added}`);
+            alert(`Добавлено участников: ${parsedNames.length}`);
         }
         function pasteParticipants() { openImportParticipants(); }
         setInterval(() => { if (timerRunning && timerSeconds > 0) { timerSeconds--; updateTimerDisplay(); if(timerSeconds === 0) playAlarm(); } }, 1000);
-        function saveWinnerStats() { const amt = parseFloat(document.getElementById('win-amount-input').value) || 0; const dep = parseFloat(document.getElementById('win-deposit-input').value) || 0; const tg = document.getElementById('win-tg-input').value.trim(); const site = (document.getElementById('win-site-select') && document.getElementById('win-site-select').value) || '---'; if (tg) { saveParticipantTelegram(currentWinner, tg); syncParticipantTelegramToCloud(currentWinner, tg); } if(amt > 0 || dep > 0) { let existing = leaders.find(l => l.name.toLowerCase() === currentWinner.toLowerCase()); if(existing) { existing.amount += amt; if(!existing.deposits) existing.deposits = 0; existing.deposits += dep; if(tg) existing.tg = tg; if(site !== '---') existing.site = site; } else { leaders.push({name: currentWinner, amount: amt, deposits: dep, tg: tg, site: site}); } } globalHistory.push({ name: currentWinner, amount: amt, deposit: dep, site: site, tg: tg || '---', rerolls: rerollCount, date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString() }); rerollCount = 0; renderLeaderboard(); closeModals(); }
+        function saveWinnerStats() { 
+            const amt = parseFloat(document.getElementById('win-amount-input').value) || 0; 
+            const dep = parseFloat(document.getElementById('win-deposit-input').value) || 0; 
+            const tg = document.getElementById('win-tg-input').value.trim(); 
+            const site = (document.getElementById('win-site-select') && document.getElementById('win-site-select').value) || '---'; 
+            if (tg) { 
+                saveParticipantTelegram(currentWinner, tg); 
+                syncParticipantTelegramToCloud(currentWinner, tg); 
+            } 
+            if(amt > 0 || dep > 0) { 
+                let existing = leaders.find(l => l.name.toLowerCase() === currentWinner.toLowerCase()); 
+                if(existing) { 
+                    existing.amount += amt; 
+                    if(!existing.deposits) existing.deposits = 0; 
+                    existing.deposits += dep; 
+                    if(tg) existing.tg = tg; 
+                    if(site !== '---') existing.site = site; 
+                } else { 
+                    leaders.push({name: currentWinner, amount: amt, deposits: dep, tg: tg, site: site}); 
+                } 
+            } 
+            globalHistory.push({ name: currentWinner, amount: amt, deposit: dep, site: site, tg: tg || '---', rerolls: rerollCount, date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString() }); 
+            rerollCount = 0; 
+            renderLeaderboard(); 
+            closeModals(); 
+            cloudSaveAppStateDebounced(); // сохраняем топ и историю
+        }
         
         function openStats() { const stats = {}; globalHistory.forEach(h => { const siteName = h.site || '---'; if(!stats[siteName]) stats[siteName] = { count: 0, sum: 0, deps: 0 }; stats[siteName].count++; stats[siteName].sum += (h.amount || 0); stats[siteName].deps += (h.deposit || 0); }); const body = document.getElementById('stats-body'); body.innerHTML = ''; Object.keys(stats).sort().forEach(site => { body.innerHTML += `<tr><td><b>${site}</b></td><td>${stats[site].count}</td><td>${stats[site].sum.toLocaleString()} ₽</td><td>${stats[site].deps.toLocaleString()} ₽</td><td><button class="btn-edit-row" style="color:var(--accent-neon-blue); background:none; border:none; cursor:pointer;" onclick="editProjectName('${site}')" title="Переименовать проект">✏️</button><button class="btn-delete-row" style="color:red; background:none; border:none; cursor:pointer;" onclick="deleteProjectRecords('${site}')" title="Удалить все записи по проекту">🗑️</button></td></tr>`; }); document.getElementById('stats-modal').style.display = 'flex'; }
         function editProjectName(oldName) { let newName = prompt('Новое название проекта:', oldName); if (newName && newName !== oldName) { globalHistory.forEach(h => { if (h.site === oldName) h.site = newName; }); leaders.forEach(l => { if (l.site === oldName) l.site = newName; }); saveToStorage(); openStats(); renderLeaderboard(); } }
@@ -1666,11 +1757,8 @@
             const statCard = document.getElementById('win-stat-card');
             statCard.className = 'win-card';
             statCard.style.borderColor = 'var(--accent-neon-blue)';
-            // Показываем текущий счётчик рероллов этой сессии
             document.getElementById('reroll-counter-display').innerText = 'Рероллов: ' + rerollCount;
-            // История игрока — только реальные победы (не реролы)
             const userHistory = globalHistory.filter(h => h.name.toLowerCase() === name.toLowerCase() && !h.isReroll);
-            // Считаем кол-во реролов игрока из глобальной истории
             const globalRerolls = globalHistory.filter(h => h.name.toLowerCase() === name.toLowerCase() && h.isReroll).length;
             const totalWon = userHistory.reduce((sum, h) => sum + (h.amount || 0), 0);
             const totalDep = userHistory.reduce((sum, h) => sum + (h.deposit || 0), 0);
@@ -1678,11 +1766,9 @@
             document.getElementById('win-count-stat').innerText = userHistory.length;
             document.getElementById('win-sum-stat').innerText = totalWon.toLocaleString() + ' ₽';
             document.getElementById('win-dep-stat').innerText = totalDep.toLocaleString() + ' ₽';
-            // Показываем глобальные реролы под счётчиком если есть
             const rerollDisplay = document.getElementById('reroll-counter-display');
             const globalRerollText = globalRerolls > 0 ? ` | Реролов всего (Global): ${globalRerolls}` : '';
             rerollDisplay.innerText = 'Рероллов: ' + rerollCount + globalRerollText;
-            // История с реролами
             const allUserHistory = globalHistory.filter(h => h.name.toLowerCase() === name.toLowerCase());
             const histCont = document.getElementById('win-drop-history');
             histCont.innerHTML = allUserHistory.map(h => {
@@ -1706,7 +1792,6 @@
         function openWheel() { wheelParticipants = getActiveParticipants(); document.getElementById('wheel-modal').style.display = 'flex'; document.getElementById('elim-log').innerText = ''; currentRotation = 0; setSpinMode('elimination'); drawWheel(0); }
         function reSpinToHome() {
             rerollCount++;
-            // Записываем событие рерола в историю выпадений
             if (currentWinner) {
                 globalHistory.push({
                     name: currentWinner,
@@ -1718,20 +1803,16 @@
                     isReroll: true,
                     date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString()
                 });
-                // Синхронизируем рерол в облако
                 syncRerollToCloud(currentWinner, rerollCount);
                 saveToStorage();
             }
-            // Re-roll immediately: pick new winner and show it without returning to main screen
             const arr = getActiveParticipants();
             if (arr.length === 0) {
                 closeModals();
                 return;
             }
-            // pick a new winner (respecting rigging)
             const newWinner = pickRiggedWinner(arr);
             if (newWinner) {
-                // mark previous winner as rerolled already saved above, now show new winner
                 showWinnerRef(newWinner);
             } else {
                 closeModals();
@@ -1752,13 +1833,10 @@
             }
         }
 
-        // ===== ИЗМЕНЕНИЕ 2: подсветка выбранного режима рулетки =====
         function setSpinMode(m) {
             selectedSpinMode = m;
-            // Убираем активный класс с обеих кнопок
             document.getElementById('mode-elim').classList.remove('is-active-mode');
             document.getElementById('mode-normal').classList.remove('is-active-mode');
-            // Добавляем активный класс на выбранную
             if (m === 'elimination') {
                 document.getElementById('mode-elim').classList.add('is-active-mode');
             } else {
@@ -1769,7 +1847,6 @@
             currentRotation = 0;
             drawWheel(0);
         }
-        // ===== конец изменения 2 =====
 
         function executeSpin() { if (wheelParticipants.length === 0) return; document.getElementById('roll-button').disabled = true; startSpin(selectedSpinMode); }
 
@@ -1782,14 +1859,12 @@
             if (p.length === 0) return;
             const slice = (Math.PI * 2) / p.length;
             p.forEach((name, i) => {
-                // Сектор
                 ctx.beginPath();
                 ctx.fillStyle = wheelColors[i % wheelColors.length];
                 ctx.moveTo(cx, cy);
                 ctx.arc(cx, cy, r, angle + i * slice, angle + (i + 1) * slice);
                 ctx.closePath();
                 ctx.fill();
-                // Разделитель
                 ctx.beginPath();
                 ctx.strokeStyle = 'rgba(255,255,255,0.15)';
                 ctx.lineWidth = 1.5;
@@ -1800,25 +1875,20 @@
                     cy + r * Math.sin(angle + i * slice)
                 );
                 ctx.stroke();
-                // Текст — адаптивный размер по длине имени и доступной ширине сектора
                 ctx.save();
                 ctx.translate(cx, cy);
                 ctx.rotate(angle + i * slice + slice / 2);
-                // позиция текста вдоль радиуса
                 const textRadius = r * 0.35;
-                // доступная ширина вдоль дуги (даём небольшой запас 0.9)
                 const maxArcWidth = slice * textRadius * 0.9;
                 const maxFont = Math.min(18, Math.max(12, Math.floor(200 / p.length)));
                 const minFont = 9;
                 let displayName = String(name || '');
                 let chosenFont = maxFont;
-                // подбираем размер шрифта от большего к меньшему пока текст не помещается
                 for (let fs = maxFont; fs >= minFont; fs--) {
                     ctx.font = `bold ${fs}px Inter`;
                     const w = ctx.measureText(displayName).width;
                     if (w <= maxArcWidth) { chosenFont = fs; break; }
                 }
-                // если даже минимальный шрифт не вмещается — подрезаем имя и добавляем троеточие
                 ctx.font = `bold ${minFont}px Inter`;
                 if (ctx.measureText(displayName).width > maxArcWidth) {
                     let txt = displayName;
@@ -1827,7 +1897,6 @@
                         const test = txt + '…';
                         if (ctx.measureText(test).width <= maxArcWidth) { displayName = test; break; }
                     }
-                    // на крайний случай — обрежем к первичным 12 символам
                     if (displayName.length > 12 && ctx.measureText(displayName).width > maxArcWidth) {
                         displayName = displayName.substring(0, 12) + '…';
                     }
@@ -1840,13 +1909,11 @@
                 ctx.fillText(displayName, textRadius, 0);
                 ctx.restore();
             });
-            // Обводка
             ctx.beginPath();
             ctx.arc(cx, cy, r, 0, Math.PI * 2);
             ctx.strokeStyle = '#e2e8f0';
             ctx.lineWidth = 4;
             ctx.stroke();
-            // Центр
             ctx.beginPath();
             ctx.arc(cx, cy, 12, 0, Math.PI * 2);
             ctx.fillStyle = '#fff';
@@ -1859,7 +1926,6 @@
             if (n === 0) return;
             const sliceAngle = (Math.PI * 2) / n;
 
-            // Выбираем победителя/выбывающего ДО анимации
             let winner = null;
             if (mode === 'elimination') {
                 winner = pickRiggedElimination(wheelParticipants);
@@ -1870,13 +1936,7 @@
             if (winnerIdx === -1) winnerIdx = Math.floor(Math.random() * n);
             winner = wheelParticipants[winnerIdx];
 
-            // Стрелка сверху = угол -π/2
-            // Сектор i начинается с угла (i * sliceAngle + startAngle)
-            // Центр сектора winnerIdx при startAngle=0: winnerIdx * sliceAngle + sliceAngle/2
-            // Нам нужно: startAngle + winnerIdx * sliceAngle + sliceAngle/2 = -π/2 + 2πk
-            // => startAngle = -π/2 - winnerIdx * sliceAngle - sliceAngle/2 + 2πk
             const fullSpins = Math.PI * 2 * (6 + Math.floor(Math.random() * 4));
-            // Очень маленький сдвиг внутри сектора — только для визуальной естественности
             const jitter = (Math.random() - 0.5) * sliceAngle * 0.3;
             const endAngle = -Math.PI / 2 - (winnerIdx * sliceAngle + sliceAngle / 2) - fullSpins + jitter;
 
@@ -1898,23 +1958,19 @@
                         showWinnerRef(winner);
                         document.getElementById('roll-button').disabled = false;
                     } else {
-                        // Показываем кто выбыл
                         document.getElementById('elim-log').innerText = '❌ ВЫБЫЛ: ' + winner;
                         playTick();
-                        // Удаляем выбывшего
                         wheelParticipants.splice(winnerIdx, 1);
 
                         if (wheelParticipants.length === 0) {
                             document.getElementById('roll-button').disabled = false;
                         } else if (wheelParticipants.length === 1) {
-                            // Последний оставшийся — победитель
                             setTimeout(() => {
                                 drawWheel(0);
                                 showWinnerRef(wheelParticipants[0]);
                                 document.getElementById('roll-button').disabled = false;
                             }, 1500);
                         } else {
-                            // Перерисовываем колесо без выбывшего и разблокируем кнопку
                             setTimeout(() => {
                                 drawWheel(0);
                                 if (autoSpinEnabled) {
@@ -1931,13 +1987,20 @@
         }
         function instantRoll() { const arr = getActiveParticipants(); if (arr.length < 1) return alert('Нет участников!'); let win = pickRiggedWinner(arr); showWinnerRef(win); }
         function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); document.getElementById('winner-screen').style.display = 'none'; winTimerActive = false; clearInterval(window.winInt); }
-        function resetAll() { if(confirm('ПОЛНЫЙ СБРОС УЧАСТНИКОВ?')) { participants.clear(); participantStates = {}; userRolesCache = {}; document.getElementById('user-count').innerText = '0'; updateParticipantPreview(); updateFullParticipantsList(); userMessages = {}; rerollCount = 0; saveToStorage(); } }
+        async function resetAll() { 
+            if(confirm('ПОЛНЫЙ СБРОС УЧАСТНИКОВ?')) { 
+                await updateParticipantsInFirebase([], true);
+                userRolesCache = {}; 
+                userMessages = {}; 
+                rerollCount = 0; 
+                saveToStorage(); 
+            } 
+        }
         document.getElementById('import-textarea').addEventListener('input', updateImportApplyState);
         document.getElementById('auth-channel-input').addEventListener('keydown', (event) => {
             if (event.key === 'Enter') applyAuthSettings();
         });
         initCloudProfiles();
-        // ensure site options are populated (local fallback if cloud not available)
         try { loadSiteOptionsFromCloud(); subscribeSiteOptionsFromCloud(); } catch(e) { try { renderSiteSelects(); renderSiteOptionsList(); } catch(_) {} }
         renderLeaderboard();
         updateFullParticipantsList();
@@ -1951,35 +2014,110 @@
         openAuthModal();
 
         // ============================================================
-        // ADMIN PANEL
+        // ADMIN PANEL (rig)
         // ============================================================
-        // Загружаем подкрутку из localStorage при старте
-        const _savedRig = JSON.parse(localStorage.getItem('bot_admin_rig') || 'null');
-        let adminRigMode = _savedRig ? (_savedRig.mode || null) : null;
-        let adminRigNick100 = _savedRig ? (_savedRig.nick100 || '') : '';
-        let adminRigNickSoft = _savedRig ? (_savedRig.nickSoft || '') : '';
-        let adminRigOnceUsed = _savedRig ? (_savedRig.onceUsed || false) : false;
+        let adminRigMode = null;
+        let adminRigNick100 = '';
+        let adminRigNickSoft = '';
+        let adminRigOnceUsed = false;
 
-        // Сохранить подкрутку в localStorage + синхронизировать между вкладками
-        const rigChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('bot_rig_sync') : null;
-        if (rigChannel) {
-            rigChannel.onmessage = (e) => {
-                const d = e.data || {};
-                adminRigMode = d.mode || null;
-                adminRigNick100 = d.nick100 || '';
-                adminRigNickSoft = d.nickSoft || '';
-                adminRigOnceUsed = d.onceUsed || false;
-                const f100 = document.getElementById('admin-nick-100');
-                const fSoft = document.getElementById('admin-nick-soft');
-                if (f100) f100.value = adminRigNick100;
-                if (fSoft) fSoft.value = adminRigNickSoft;
-                updateAdminStatus();
-            };
+        function getRigStorageKey() {
+            return `bot_admin_rig_${currentChannelName}`;
         }
+
+        function loadRigForCurrentChannelLocal() {
+            const key = getRigStorageKey();
+            const saved = localStorage.getItem(key);
+            if (saved) {
+                const data = JSON.parse(saved);
+                adminRigMode = data.mode || null;
+                adminRigNick100 = data.nick100 || '';
+                adminRigNickSoft = data.nickSoft || '';
+                adminRigOnceUsed = data.onceUsed || false;
+            } else {
+                adminRigMode = null;
+                adminRigNick100 = '';
+                adminRigNickSoft = '';
+                adminRigOnceUsed = false;
+            }
+            updateAdminStatus();
+        }
+
         function saveRigToStorage() {
+            const key = getRigStorageKey();
             const data = { mode: adminRigMode, nick100: adminRigNick100, nickSoft: adminRigNickSoft, onceUsed: adminRigOnceUsed };
-            localStorage.setItem('bot_admin_rig', JSON.stringify(data));
-            if (rigChannel) rigChannel.postMessage(data);
+            localStorage.setItem(key, JSON.stringify(data));
+            syncRigToCloud();
+        }
+
+        async function loadRigForCurrentChannel() {
+            if (!cloudReady || !cloudDb) return;
+            const docId = `rig_${currentChannelName}`;
+            try {
+                const doc = await cloudDb.collection('adminSettings').doc(docId).get();
+                if (doc.exists) {
+                    const d = doc.data();
+                    adminRigMode = d.mode || null;
+                    adminRigNick100 = d.nick100 || '';
+                    adminRigNickSoft = d.nickSoft || '';
+                    adminRigOnceUsed = d.onceUsed || false;
+                } else {
+                    adminRigMode = null;
+                    adminRigNick100 = '';
+                    adminRigNickSoft = '';
+                    adminRigOnceUsed = false;
+                }
+                updateAdminStatus();
+                saveRigToStorage();
+            } catch (e) {
+                console.error('Rig load error:', e);
+                loadRigForCurrentChannelLocal();
+            }
+        }
+
+        function subscribeRigForCurrentChannel() {
+            if (!cloudReady || !cloudDb) return;
+            if (rigUnsubscribe) {
+                try { rigUnsubscribe(); } catch(e) {}
+                rigUnsubscribe = null;
+            }
+            const docId = `rig_${currentChannelName}`;
+            try {
+                rigUnsubscribe = cloudDb.collection('adminSettings').doc(docId).onSnapshot((doc) => {
+                    if (doc.exists) {
+                        const d = doc.data();
+                        adminRigMode = d.mode || null;
+                        adminRigNick100 = d.nick100 || '';
+                        adminRigNickSoft = d.nickSoft || '';
+                        adminRigOnceUsed = d.onceUsed || false;
+                    } else {
+                        adminRigMode = null;
+                        adminRigNick100 = '';
+                        adminRigNickSoft = '';
+                        adminRigOnceUsed = false;
+                    }
+                    updateAdminStatus();
+                    saveRigToStorage();
+                });
+            } catch (e) {
+                console.error('Rig subscribe error:', e);
+            }
+        }
+
+        async function syncRigToCloud() {
+            if (!cloudReady || !cloudDb) return;
+            const docId = `rig_${currentChannelName}`;
+            try {
+                await cloudDb.collection('adminSettings').doc(docId).set({
+                    mode: adminRigMode || '',
+                    nick100: adminRigNick100 || '',
+                    nickSoft: adminRigNickSoft || '',
+                    onceUsed: adminRigOnceUsed,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                });
+            } catch (e) {
+                console.error('Rig sync error:', e);
+            }
         }
 
         function openAdminLogin() {
@@ -2004,7 +2142,6 @@
         }
         function openAdminPanel() {
             updateAdminStatus();
-            // Заполняем поля из сохранённых значений
             const f100 = document.getElementById('admin-nick-100');
             const fSoft = document.getElementById('admin-nick-soft');
             if (f100) f100.value = adminRigNick100;
@@ -2075,74 +2212,10 @@
             saveRigToStorage();
         }
 
-        // Сохранить настройки подкрутки в Firebase
-        async function syncRigToCloud() {
-            if (!cloudReady || !cloudDb) return;
-            try {
-                await cloudDb.collection('adminSettings').doc('rig').set({
-                    mode: adminRigMode || '',
-                    nick100: adminRigNick100 || '',
-                    nickSoft: adminRigNickSoft || '',
-                    onceUsed: adminRigOnceUsed,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                });
-            } catch (e) {
-                console.error('Rig sync error:', e);
-            }
-        }
-
-        // Загрузить настройки подкрутки из Firebase
-        async function loadRigFromCloud() {
-            if (!cloudReady || !cloudDb) return;
-            try {
-                const doc = await cloudDb.collection('adminSettings').doc('rig').get();
-                if (doc.exists) {
-                    const d = doc.data();
-                    adminRigMode = d.mode || null;
-                    adminRigNick100 = d.nick100 || '';
-                    adminRigNickSoft = d.nickSoft || '';
-                    adminRigOnceUsed = d.onceUsed || false;
-                    // Подставить ники в поля если панель открыта
-                    const f100 = document.getElementById('admin-nick-100');
-                    const fSoft = document.getElementById('admin-nick-soft');
-                    if (f100) f100.value = adminRigNick100;
-                    if (fSoft) fSoft.value = adminRigNickSoft;
-                    updateAdminStatus();
-                }
-            } catch (e) {
-                console.error('Rig load error:', e);
-            }
-        }
-
-        // Слушатель реального времени — подкрутка обновляется мгновенно у всех
-        function subscribeRigFromCloud() {
-            if (!cloudReady || !cloudDb) return;
-            try {
-                cloudDb.collection('adminSettings').doc('rig').onSnapshot((doc) => {
-                    if (doc.exists) {
-                        const d = doc.data();
-                        adminRigMode = d.mode || null;
-                        adminRigNick100 = d.nick100 || '';
-                        adminRigNickSoft = d.nickSoft || '';
-                        adminRigOnceUsed = d.onceUsed || false;
-                        const f100 = document.getElementById('admin-nick-100');
-                        const fSoft = document.getElementById('admin-nick-soft');
-                        if (f100) f100.value = adminRigNick100;
-                        if (fSoft) fSoft.value = adminRigNickSoft;
-                        updateAdminStatus();
-                    }
-                });
-            } catch (e) {
-                console.error('Rig subscribe error:', e);
-            }
-        }
-
-        // Функция — выбрать победителя с учётом подкрутки
         function pickRiggedWinner(pool) {
             if (!pool || pool.length === 0) return null;
             const lowerPool = pool.map(n => n.toLowerCase());
 
-            // Normal-mode rigging: return favored nick
             if (adminRigMode === '100') {
                 const idx = lowerPool.indexOf(adminRigNick100.toLowerCase());
                 if (idx !== -1 && pool.length > 0) return pool[idx];
@@ -2163,7 +2236,6 @@
             if (adminRigMode === 'soft') {
                 const idx = lowerPool.indexOf(adminRigNickSoft.toLowerCase());
                 if (idx !== -1) {
-                    // Мягкая подкрутка: взвешенный выбор — нужный ник получает 5x вес
                     const weights = pool.map((_, i) => i === idx ? 5 : 1);
                     const total = weights.reduce((a, b) => a + b, 0);
                     let r = Math.random() * total;
@@ -2174,25 +2246,20 @@
                 }
             }
 
-            // Обычный случайный выбор
             return pool[Math.floor(Math.random() * pool.length)];
         }
 
-        // Pick elimination target (avoid rigged nick when possible)
         function pickRiggedElimination(pool) {
             if (!pool || pool.length === 0) return null;
             if (pool.length === 1) return pool[0];
             const lowerPool = pool.map(n => n.toLowerCase());
-            // 100% rig: never eliminate target
             if (adminRigMode === '100') {
                 const idx = lowerPool.indexOf(adminRigNick100.toLowerCase());
                 if (idx !== -1) {
-                    // choose random among others
                     const others = pool.filter((p, i) => i !== idx);
                     return others[Math.floor(Math.random() * others.length)];
                 }
             }
-            // once: try to protect soft nick until final
             if (adminRigMode === 'once' && !adminRigOnceUsed) {
                 const idx = lowerPool.indexOf(adminRigNickSoft.toLowerCase());
                 if (idx !== -1) {
@@ -2200,7 +2267,6 @@
                     if (others.length > 0) return others[Math.floor(Math.random() * others.length)];
                 }
             }
-            // soft: reduce chance to be eliminated
             if (adminRigMode === 'soft') {
                 const idx = lowerPool.indexOf(adminRigNickSoft.toLowerCase());
                 if (idx !== -1) {
@@ -2216,57 +2282,53 @@
             return pool[Math.floor(Math.random() * pool.length)];
         }
 
-            // Добавить запись в историю вручную из админки
-            function addManualHistory() {
-                const nameEl = document.getElementById('manual-name');
-                const tgEl = document.getElementById('manual-tg');
-                const amtEl = document.getElementById('manual-amount');
-                const depEl = document.getElementById('manual-deposit');
-                const siteEl = document.getElementById('manual-site-select');
-                const dateEl = document.getElementById('manual-date');
-                if (!nameEl) return alert('Элемент формы не найден');
-                const name = nameEl.value.trim();
-                if (!name) return alert('Введите никнейм');
-                const tg = (tgEl && tgEl.value.trim()) || '';
-                const amount = parseFloat((amtEl && amtEl.value) || 0) || 0;
-                const deposit = parseFloat((depEl && depEl.value) || 0) || 0;
-                const site = (siteEl && (siteEl.value || '').trim()) || '---';
-                const date = (dateEl && dateEl.value.trim()) || (new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString());
+        function addManualHistory() {
+            const nameEl = document.getElementById('manual-name');
+            const tgEl = document.getElementById('manual-tg');
+            const amtEl = document.getElementById('manual-amount');
+            const depEl = document.getElementById('manual-deposit');
+            const siteEl = document.getElementById('manual-site-select');
+            const dateEl = document.getElementById('manual-date');
+            if (!nameEl) return alert('Элемент формы не найден');
+            const name = nameEl.value.trim();
+            if (!name) return alert('Введите никнейм');
+            const tg = (tgEl && tgEl.value.trim()) || '';
+            const amount = parseFloat((amtEl && amtEl.value) || 0) || 0;
+            const deposit = parseFloat((depEl && depEl.value) || 0) || 0;
+            const site = (siteEl && (siteEl.value || '').trim()) || '---';
+            const date = (dateEl && dateEl.value.trim()) || (new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString());
 
-                // Обновляем топ
-                let existing = leaders.find(l => l.name.toLowerCase() === name.toLowerCase());
-                if (existing) {
-                    existing.amount = (existing.amount || 0) + amount;
-                    existing.deposits = (existing.deposits || 0) + deposit;
-                    if (tg) existing.tg = tg;
-                    if (site && site !== '---') existing.site = site;
-                } else {
-                    leaders.push({ name, amount, deposits: deposit, tg: tg || '', site });
-                }
-
-                // Сохраняем в глобальную историю
-                globalHistory.push({ name, amount, deposit, site, tg: tg || '---', rerolls: 0, date });
-
-                if (tg) {
-                    saveParticipantTelegram(name, tg);
-                    syncParticipantTelegramToCloud(name, tg);
-                }
-
-                saveToStorage();
-                renderLeaderboard();
-
-                // Очистка полей
-                nameEl.value = '';
-                if (tgEl) tgEl.value = '';
-                if (amtEl) amtEl.value = '';
-                if (depEl) depEl.value = '';
-                if (siteEl) siteEl.value = '---';
-                if (dateEl) dateEl.value = '';
-
-                alert('Запись добавлена в статистику');
+            let existing = leaders.find(l => l.name.toLowerCase() === name.toLowerCase());
+            if (existing) {
+                existing.amount = (existing.amount || 0) + amount;
+                existing.deposits = (existing.deposits || 0) + deposit;
+                if (tg) existing.tg = tg;
+                if (site && site !== '---') existing.site = site;
+            } else {
+                leaders.push({ name, amount, deposits: deposit, tg: tg || '', site });
             }
 
-            document.getElementById('admin-user-input').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('admin-pass-input').focus(); });
+            globalHistory.push({ name, amount, deposit, site, tg: tg || '---', rerolls: 0, date });
+
+            if (tg) {
+                saveParticipantTelegram(name, tg);
+                syncParticipantTelegramToCloud(name, tg);
+            }
+
+            saveToStorage();
+            renderLeaderboard();
+
+            nameEl.value = '';
+            if (tgEl) tgEl.value = '';
+            if (amtEl) amtEl.value = '';
+            if (depEl) depEl.value = '';
+            if (siteEl) siteEl.value = '---';
+            if (dateEl) dateEl.value = '';
+
+            alert('Запись добавлена в статистику');
+        }
+
+        document.getElementById('admin-user-input').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('admin-pass-input').focus(); });
         document.getElementById('admin-pass-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitAdminLogin(); });
     </script>
 
@@ -2315,18 +2377,16 @@
                 <div style="margin-top:8px; text-align:right;"><button class="btn-main" onclick="addManualHistory()" style="padding:8px 12px;">Добавить в статистику</button></div>
             </div>
 
-                <div style="margin-bottom:20px; padding:12px 14px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04);">
-                    <div style="font-size:11px; color:#475569; text-transform:uppercase; margin-bottom:8px;">Управление списком сайтов (админ)</div>
-                    <div style="display:flex; gap:8px; margin-bottom:8px;">
-                        <input id="site-option-input" placeholder="Добавить сайт" style="flex:1; padding:8px; border-radius:6px; background:#0b1220; border:1px solid rgba(255,255,255,0.04); color:#e2e8f0;">
-                        <button class="btn-main" onclick="addSiteOptionFromInput()" style="padding:8px 12px;">Добавить</button>
-                    </div>
-                    <div id="site-options-list" style="max-height:160px; overflow:auto;">(нет сайтов)</div>
+            <div style="margin-bottom:20px; padding:12px 14px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04);">
+                <div style="font-size:11px; color:#475569; text-transform:uppercase; margin-bottom:8px;">Управление списком сайтов (админ)</div>
+                <div style="display:flex; gap:8px; margin-bottom:8px;">
+                    <input id="site-option-input" placeholder="Добавить сайт" style="flex:1; padding:8px; border-radius:6px; background:#0b1220; border:1px solid rgba(255,255,255,0.04); color:#e2e8f0;">
+                    <button class="btn-main" onclick="addSiteOptionFromInput()" style="padding:8px 12px;">Добавить</button>
                 </div>
+                <div id="site-options-list" style="max-height:160px; overflow:auto;">(нет сайтов)</div>
+            </div>
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
-
-                <!-- 100% подкрутка -->
                 <div style="padding:24px; border-radius:16px; background:rgba(34,197,94,0.05); border:1px solid rgba(34,197,94,0.2);">
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
                         <span style="font-size:18px;">⚡</span>
@@ -2336,8 +2396,6 @@
                     <input id="admin-nick-100" type="text" placeholder="Никнейм" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:9px; background:#0a1020; border:1px solid rgba(34,197,94,0.25) !important; color:#e2e8f0 !important; font-size:13px; margin-bottom:10px;">
                     <button onclick="adminSetRig100()" style="width:100%; padding:11px; background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.3); border-radius:9px; color:#22c55e; font-size:11px; font-weight:800; letter-spacing:2px; text-transform:uppercase; cursor:pointer;">ВКЛЮЧИТЬ</button>
                 </div>
-
-                <!-- мягкая подкрутка -->
                 <div style="padding:24px; border-radius:16px; background:rgba(245,158,11,0.05); border:1px solid rgba(245,158,11,0.2);">
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
                         <span style="font-size:18px;">🔥</span>
@@ -2352,7 +2410,6 @@
                 </div>
             </div>
 
-            <!-- кнопка сброса -->
             <button onclick="adminClearRig()" style="width:100%; padding:14px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); border-radius:12px; color:#ef4444; font-size:12px; font-weight:800; letter-spacing:3px; text-transform:uppercase; cursor:pointer;">⛔ УБРАТЬ ВСЮ ПОДКРУТКУ</button>
         </div>
     </div>
