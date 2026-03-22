@@ -1688,7 +1688,8 @@
             document.getElementById('import-replace-checkbox').checked = false;
             updateImportApplyState();
             closeModals();
-            alert(`Добавлено участников: ${parsedNames.length}`);
+            // Go directly to wheel instead of showing alert
+            openWheel();
         }
         function pasteParticipants() { openImportParticipants(); }
         setInterval(() => { if (timerRunning && timerSeconds > 0) { timerSeconds--; updateTimerDisplay(); if(timerSeconds === 0) playAlarm(); } }, 1000);
