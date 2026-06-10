@@ -3,424 +3,393 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Floorball – Rellena los huecos</title>
+<title>Penaltis ⚽</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: #1a1a2e;
-    color: #e0e0e0;
-    min-height: 100vh;
-    padding: 30px 20px;
-  }
-  h1 {
-    text-align: center;
-    font-size: 1.8rem;
-    color: #00d4ff;
-    margin-bottom: 6px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-  .subtitle {
-    text-align: center;
-    color: #888;
-    margin-bottom: 24px;
-    font-size: 0.9rem;
-  }
-  .stats {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    margin-bottom: 20px;
-    font-size: 0.95rem;
-  }
-  .stat { color: #aaa; }
-  .stat span { color: #00d4ff; font-weight: bold; }
-  .text-box {
-    background: #16213e;
-    border: 1px solid #0f3460;
-    border-radius: 12px;
-    padding: 28px 32px;
-    max-width: 820px;
-    margin: 0 auto 24px;
-    line-height: 2.1;
-    font-size: 1rem;
-  }
-  .text-box h2 {
-    color: #00d4ff;
-    font-size: 1.1rem;
-    margin: 18px 0 6px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  .text-box h2:first-child { margin-top: 0; }
-  input.blank {
-    background: #0f3460;
-    border: 2px solid #00d4ff44;
-    border-radius: 6px;
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #0a1628;
     color: #fff;
-    font-size: 1rem;
-    font-family: inherit;
-    padding: 2px 6px;
-    width: var(--w, 100px);
-    min-width: 60px;
-    outline: none;
-    transition: border-color 0.2s, background 0.2s;
-    vertical-align: middle;
-    text-align: center;
-  }
-  input.blank:focus { border-color: #00d4ff; background: #163060; }
-  input.blank.correct {
-    border-color: #00e676;
-    background: #003320;
-    color: #00e676;
-  }
-  input.blank.wrong {
-    border-color: #ff5252;
-    background: #330000;
-    color: #ff5252;
-    animation: shake 0.3s;
-  }
-  @keyframes shake {
-    0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)}
-  }
-  .buttons {
+    min-height: 100vh;
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
-    gap: 14px;
-    flex-wrap: wrap;
-    max-width: 820px;
-    margin: 0 auto 20px;
+    padding: 20px;
   }
-  button {
-    padding: 12px 26px;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-weight: 600;
+
+  h1 {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #a8d8a8;
+    margin-bottom: 18px;
+    text-align: center;
+  }
+
+  #field {
+    background: #2d8a4e;
+    border-radius: 12px;
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    height: 300px;
+    overflow: hidden;
+    border: 2px solid #1f6b3a;
+  }
+
+  #field::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.12);
+    pointer-events: none;
+  }
+
+  #field::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 2px; height: 100%;
+    background: rgba(255,255,255,0.08);
+    pointer-events: none;
+  }
+
+  #goal {
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 270px;
+    height: 95px;
+    border: 4px solid white;
+    border-bottom: none;
+    border-radius: 2px 2px 0 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 2px;
+    padding: 4px;
+  }
+
+  .zone {
+    border: 1.5px solid rgba(255,255,255,0.3);
+    border-radius: 3px;
     cursor: pointer;
-    transition: transform 0.1s, opacity 0.2s;
-    letter-spacing: 0.5px;
+    transition: background 0.15s;
+    position: relative;
   }
-  button:hover { transform: scale(1.04); }
-  #btn-check { background: #00d4ff; color: #000; }
-  #btn-reveal { background: #ff9800; color: #000; }
-  #btn-new { background: #7c4dff; color: #fff; }
-  .message {
-    text-align: center;
-    font-size: 1.1rem;
-    font-weight: bold;
-    min-height: 28px;
-    margin-bottom: 10px;
-    color: #00e676;
+
+  .zone:hover { background: rgba(255,255,255,0.18); }
+  .zone.selected { background: rgba(255,255,0,0.2); border-color: yellow; }
+  .zone.hit { background: rgba(0,220,80,0.6) !important; }
+  .zone.saved { background: rgba(255,160,0,0.6) !important; }
+
+  #ball {
+    position: absolute;
+    font-size: 30px;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: all 0.5s cubic-bezier(0.2,0.8,0.4,1);
+    pointer-events: none;
+    line-height: 1;
   }
-  .hint {
+
+  #keeper {
+    position: absolute;
+    font-size: 30px;
+    top: 105px;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: left 0.25s ease-out;
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  #result-msg {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 26px;
+    font-weight: 500;
+    color: white;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    background: rgba(0,0,0,0.5);
+    padding: 10px 22px;
+    border-radius: 10px;
+    opacity: 0;
+    transition: opacity 0.25s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  #scoreboard {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .score-card {
+    flex: 1;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 10px 8px;
     text-align: center;
-    font-size: 0.8rem;
-    color: #555;
+  }
+
+  .score-label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .score-val {
+    font-size: 28px;
+    font-weight: 500;
+    color: #a8d8a8;
+    line-height: 1.2;
+  }
+
+  #series-dots {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 12px;
+  }
+
+  .dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: 1.5px solid rgba(255,255,255,0.2);
+    transition: background 0.3s;
+  }
+
+  .dot.gol { background: #2d8a4e; border-color: #a8d8a8; }
+  .dot.fallo { background: #c0392b; border-color: #e74c3c; }
+
+  #status-bar {
+    font-size: 14px;
+    color: rgba(255,255,255,0.55);
     margin-top: 10px;
+    min-height: 20px;
+    text-align: center;
+    max-width: 480px;
+    width: 100%;
   }
+
+  #shoot-btn {
+    margin-top: 12px;
+    width: 100%;
+    max-width: 480px;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 10px;
+    background: #1f6b3a;
+    border: 1.5px solid #2d8a4e;
+    color: #a8d8a8;
+    letter-spacing: 0.04em;
+    transition: background 0.15s, opacity 0.15s;
+  }
+
+  #shoot-btn:hover:not(:disabled) { background: #256e40; }
+  #shoot-btn:disabled { opacity: 0.35; cursor: default; }
 </style>
 </head>
 <body>
 
-<h1>⚽ Teoría Floorball</h1>
-<p class="subtitle">Rellena los 40 huecos con la palabra correcta</p>
+<h1>⚽ Penaltis</h1>
 
-<div class="stats">
-  <div class="stat">Correctas: <span id="score">0</span> / <span id="total">0</span></div>
-  <div class="stat">Errores: <span id="errors">0</span></div>
+<div id="field">
+  <div id="goal">
+    <div class="zone" data-z="0"></div>
+    <div class="zone" data-z="1"></div>
+    <div class="zone" data-z="2"></div>
+    <div class="zone" data-z="3"></div>
+    <div class="zone" data-z="4"></div>
+    <div class="zone" data-z="5"></div>
+  </div>
+  <div id="keeper">🧤</div>
+  <div id="ball">⚽</div>
+  <div id="result-msg"></div>
 </div>
 
-<div class="text-box" id="text-container"></div>
-
-<div class="message" id="message"></div>
-
-<div class="buttons">
-  <button id="btn-check">✔ Comprobar</button>
-  <button id="btn-reveal">👁 Revelar respuestas</button>
-  <button id="btn-new">🔄 Nueva partida</button>
+<div id="scoreboard">
+  <div class="score-card"><div class="score-label">Goles</div><div class="score-val" id="s-goles">0</div></div>
+  <div class="score-card"><div class="score-label">Fallos</div><div class="score-val" id="s-fallos">0</div></div>
+  <div class="score-card"><div class="score-label">Ronda</div><div class="score-val" id="s-ronda">1/5</div></div>
+  <div class="score-card"><div class="score-label">Récord</div><div class="score-val" id="s-record">0</div></div>
 </div>
 
-<p class="hint">Pulsa "Comprobar" para ver si tus respuestas son correctas. "Nueva partida" mezcla otros 40 huecos.</p>
+<div id="series-dots"></div>
+<div id="status-bar">Elige una zona de la portería para disparar 🎯</div>
+<button id="shoot-btn" disabled>— Elige dónde disparar arriba —</button>
 
 <script>
-// ── Full text as array of tokens (words + punctuation) ──────────────────────
-// We store the text as segments: {text, isWord}
-// Words are the candidates for blanks.
+  const zones = document.querySelectorAll('.zone');
+  const ball = document.getElementById('ball');
+  const keeper = document.getElementById('keeper');
+  const resultMsg = document.getElementById('result-msg');
+  const statusBar = document.getElementById('status-bar');
+  const shootBtn = document.getElementById('shoot-btn');
+  const dotsContainer = document.getElementById('series-dots');
 
-const FULL_TEXT_HTML = `<h2>TEORÍA FLOORBALL</h2>
-<h2>1. ANTECEDENTES HISTÓRICOS</h2>
-<p>- Hockey nace como deporte a finales del S. XIX en Inglaterra. Tiene 4 modalidades: Hockey hierba, hockey patines, hockey hielo y hockey sala.</p>
-<p>- El floorball nace a mediados de la década de los 80, en los países nórdicos (Noruega y Suecia), con una doble finalidad:</p>
-<p>1. Disminuir la peligrosidad del hockey.</p>
-<p>2. Abaratar los costes económicos de materiales e instalaciones.</p>
-<h2>2. MATERIALES Y TERRENO DE JUEGO</h2>
-<p><strong>Materiales</strong></p>
-<p>- Stick: compuesto por mango y pala (la pala es plana por ambos lados, al igual que el hockey hielo y hockey patines).</p>
-<p>- Bola: ligera, de plástico y agujereada.</p>
-<p>- Portería: igual que la de hockey hielo (105cm x 90cm).</p>
-<p><strong>Terreno juego</strong></p>
-<p>- Tiene que ser rectangular, siendo el lado largo doble al ancho.</p>
-<h2>3. TIPOS DE PASE</h2>
-<p>- Push: pase en acción de barrido.</p>
-<p>- Slap: pase en acción de golpeo.</p>
-<p>- Cuchara: pase elevado.</p>
-<h2>4. PRINCIPALES ACCIONES TÉCNICAS</h2>
-<p>- Toque: acción técnica individual que utiliza el jugador que tiene posesión de la bola para desplazarse por el terreno de juego, utilizando ambas caras de la pala del stick.</p>
-<p>- Conducción: acción técnica individual que utiliza el jugador que tiene posesión de la bola para desplazarse por el terreno de juego, utilizando una sola cara de la pala del stick.</p>
-<p>- Finta: acción técnica que utiliza un atacante para desequilibrar a un defensa.</p>
-<p>- Saques:</p>
-<p>Inicio: desde el punto centro del campo el árbitro la deja botar, y dos jugadores de cada equipo la disputan.</p>
-<p>Gol: desde el punto central y hacia atrás.</p>
-<p>Neutral: desde el punto el árbitro la deja botar, igual que el saque de inicio.</p>
-<h2>5. LANZAMIENTOS</h2>
-<p>- Penalty: (como en balonmano) a 7 metros de la portería. Toda falta cometida dentro del área es penalty.</p>
-<h2>FLOORBALL</h2>
-<p>Es una modificación deportiva del hockey que se utiliza para facilitar el aprendizaje de un deporte caro y peligroso en un colegio o un centro deportivo.</p>`;
+  let goles = 0, fallos = 0, round = 1, total = 5;
+  let record = parseInt(localStorage.getItem('futbol-record') || '0');
+  let selectedZone = null, shooting = false, gameOver = false;
 
-// Extract all plain words from HTML (preserving order)
-function extractWords(html) {
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  const words = [];
-  function walk(node) {
-    if (node.nodeType === 3) { // text node
-      const matches = [...node.textContent.matchAll(/[A-Za-záéíóúüñÁÉÍÓÚÜÑçÇ0-9]+/g)];
-      matches.forEach(m => words.push({ word: m[0], index: m.index, node }));
-    } else {
-      node.childNodes.forEach(walk);
-    }
-  }
-  walk(tmp);
-  return words;
-}
+  document.getElementById('s-record').textContent = record;
+  renderDots();
 
-// Build game HTML: replace chosen words with inputs
-function buildGame(chosenIndices) {
-  // We'll work on a clone and replace text nodes
-  const tmp = document.createElement('div');
-  tmp.innerHTML = FULL_TEXT_HTML;
+  const zonePositions = [
+    { left: '28%', top: '22px' }, { left: '50%', top: '22px' }, { left: '72%', top: '22px' },
+    { left: '28%', top: '72px' }, { left: '50%', top: '72px' }, { left: '72%', top: '72px' }
+  ];
 
-  // Collect all text nodes with their words
-  const textNodes = [];
-  function walk(node) {
-    if (node.nodeType === 3) {
-      textNodes.push(node);
-    } else {
-      node.childNodes.forEach(walk);
-    }
-  }
-  walk(tmp);
+  zones.forEach((z, i) => {
+    z.addEventListener('click', () => {
+      if (shooting || gameOver) return;
+      zones.forEach(z2 => z2.classList.remove('selected'));
+      z.classList.add('selected');
+      selectedZone = i;
+      shootBtn.disabled = false;
+      statusBar.textContent = '¡Listo! Pulsa Disparar ⚽';
+    });
+  });
 
-  // Words to NEVER blank out: articles, prepositions, conjunctions, short fillers, numbers/codes
-  const STOPWORDS = new Set([
-    // articles
-    'el','la','los','las','un','una','unos','unas',
-    // prepositions
-    'a','ante','bajo','con','contra','de','desde','en','entre','hacia','hasta',
-    'para','por','según','sin','sobre','tras','durante','mediante',
-    // conjunctions
-    'y','e','o','u','ni','pero','sino','aunque','porque','que','si','como',
-    'cuando','donde','mientras','pues','ya','también','además','tanto',
-    // pronouns / determiners
-    'al','del','su','sus','se','le','lo','les','me','mi','mis','tu','te',
-    'nos','es','son','ser','ha','han','hay','se','al',
-    // common verbs (copula/aux)
-    'es','son','fue','fueron','tiene','tienen','tiene','hay',
-    // numbers as words
-    'uno','dos','tres','cuatro',
-    // single letters & abbreviations that slip through
-    's','x','cm',
-  ]);
+  shootBtn.addEventListener('click', doShoot);
 
-  function isContentWord(w) {
-    // Exclude pure numbers or mixed short codes like "80", "XIX", "105cm", "90cm", "7"
-    if (/^\d+$/.test(w)) return false;          // pure digits
-    if (/^[IVXLCDM]+$/.test(w)) return false;   // Roman numerals
-    if (w.length <= 2) return false;             // very short tokens
-    if (STOPWORDS.has(w.toLowerCase())) return false;
-    return true;
-  }
+  function doShoot() {
+    if (selectedZone === null || shooting || gameOver) return;
+    shooting = true;
+    shootBtn.disabled = true;
+    zones.forEach(z => z.style.pointerEvents = 'none');
 
-  // Build a flat list of all words across all text nodes
-  let wordIdx = 0;
-  const wordMap = []; // [{nodeIdx, matchIdx, word}]
-  textNodes.forEach((tn, ni) => {
-    const matches = [...tn.textContent.matchAll(/[A-Za-záéíóúüñÁÉÍÓÚÜÑçÇ0-9]+/g)];
-    matches.forEach(m => {
-      if (isContentWord(m[0])) {
-        wordMap.push({ nodeIdx: ni, start: m.index, end: m.index + m[0].length, word: m[0], globalIdx: wordIdx });
-        wordIdx++;
+    const keeperChoice = Math.floor(Math.random() * 6);
+    const saved = keeperChoice === selectedZone;
+
+    const field = document.getElementById('field');
+    const fw = field.offsetWidth;
+    const pos = zonePositions[selectedZone];
+    const leftPx = (parseFloat(pos.left) / 100) * fw;
+    ball.style.bottom = '230px';
+    ball.style.left = (leftPx - 15) + 'px';
+    ball.style.fontSize = '14px';
+
+    const kpx = (parseFloat(zonePositions[keeperChoice].left) / 100) * fw;
+    keeper.style.left = (kpx - 15) + 'px';
+    keeper.style.transform = 'none';
+
+    setTimeout(() => {
+      zones[selectedZone].classList.remove('selected');
+      zones[selectedZone].classList.add(saved ? 'saved' : 'hit');
+
+      if (!saved) {
+        goles++;
+        showMsg('⚽ ¡GOOOOOL!');
+        flashField('#1a6b3e');
+      } else {
+        fallos++;
+        showMsg('🧤 ¡Parada!');
+        flashField('#7a1a1a');
       }
-    });
-  });
+      updateScores();
+      round++;
 
-  // For each text node, rebuild its content replacing chosen words with placeholders
-  const blankWords = [];
-  const nodeReplacements = {}; // nodeIdx -> array of {start,end,word,blankId}
-  chosenIndices.forEach(gi => {
-    const w = wordMap[gi];
-    if (!nodeReplacements[w.nodeIdx]) nodeReplacements[w.nodeIdx] = [];
-    nodeReplacements[w.nodeIdx].push({ start: w.start, end: w.end, word: w.word, blankId: blankWords.length });
-    blankWords.push(w.word);
-  });
+      setTimeout(() => {
+        resultMsg.style.opacity = '0';
+        ball.style.bottom = '28px';
+        ball.style.left = '50%';
+        ball.style.fontSize = '30px';
+        keeper.style.left = '50%';
+        keeper.style.transform = 'translateX(-50%)';
+        zones[selectedZone].classList.remove('hit', 'saved', 'selected');
+        zones.forEach(z => z.style.pointerEvents = 'auto');
+        selectedZone = null;
+        shooting = false;
 
-  // Replace text nodes
-  textNodes.forEach((tn, ni) => {
-    const replacements = nodeReplacements[ni];
-    if (!replacements || replacements.length === 0) return;
-    // Sort by start desc to replace from end
-    replacements.sort((a, b) => a.start - b.start);
-    const text = tn.textContent;
-    const frag = document.createDocumentFragment();
-    let pos = 0;
-    replacements.forEach(r => {
-      if (r.start > pos) frag.appendChild(document.createTextNode(text.slice(pos, r.start)));
-      const inp = document.createElement('input');
-      inp.type = 'text';
-      inp.className = 'blank';
-      inp.dataset.answer = r.word.toLowerCase();
-      inp.dataset.blankId = r.blankId;
-      inp.style.setProperty('--w', Math.max(60, r.word.length * 13) + 'px');
-      inp.placeholder = '?';
-      inp.autocomplete = 'off';
-      inp.spellcheck = false;
-      frag.appendChild(inp);
-      pos = r.end;
-    });
-    if (pos < text.length) frag.appendChild(document.createTextNode(text.slice(pos)));
-    tn.parentNode.replaceChild(frag, tn);
-  });
-
-  return { html: tmp.innerHTML, blankWords };
-}
-
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+        if (round > total) {
+          endGame();
+        } else {
+          document.getElementById('s-ronda').textContent = round + '/5';
+          statusBar.textContent = 'Elige una zona de la portería para disparar 🎯';
+        }
+      }, 1600);
+    }, 550);
   }
-  return arr;
-}
 
-let totalBlanks = 0;
-let errorCount = 0;
-
-function startGame() {
-  errorCount = 0;
-  document.getElementById('message').textContent = '';
-  document.getElementById('errors').textContent = '0';
-
-  // Count only content words (same filter as buildGame)
-  const STOP = new Set([
-    'el','la','los','las','un','una','unos','unas',
-    'a','ante','bajo','con','contra','de','desde','en','entre','hacia','hasta',
-    'para','por','según','sin','sobre','tras','durante','mediante',
-    'y','e','o','u','ni','pero','sino','aunque','porque','que','si','como',
-    'cuando','donde','mientras','pues','ya','también','además','tanto',
-    'al','del','su','sus','se','le','lo','les','me','mi','mis','tu','te',
-    'nos','es','son','ser','ha','han','hay',
-    'fue','fueron','tiene','tienen',
-    'uno','dos','tres','cuatro','s','x','cm',
-  ]);
-  function isContent(w) {
-    if (/^\d+$/.test(w)) return false;
-    if (/^[IVXLCDM]+$/.test(w)) return false;
-    if (w.length <= 2) return false;
-    if (STOP.has(w.toLowerCase())) return false;
-    return true;
+  function showMsg(txt) {
+    resultMsg.textContent = txt;
+    resultMsg.style.opacity = '1';
   }
-  const tmp = document.createElement('div');
-  tmp.innerHTML = FULL_TEXT_HTML;
-  let contentCount = 0;
-  function walk(node) {
-    if (node.nodeType === 3) {
-      const matches = [...node.textContent.matchAll(/[A-Za-záéíóúüñÁÉÍÓÚÜÑçÇ0-9]+/g)];
-      matches.forEach(m => { if (isContent(m[0])) contentCount++; });
-    } else { node.childNodes.forEach(walk); }
+
+  function flashField(color) {
+    const f = document.getElementById('field');
+    f.style.background = color;
+    setTimeout(() => f.style.background = '#2d8a4e', 300);
   }
-  walk(tmp);
 
-  const indices = shuffle([...Array(contentCount).keys()]).slice(0, 40);
-  const { html, blankWords } = buildGame(indices);
+  function updateScores() {
+    document.getElementById('s-goles').textContent = goles;
+    document.getElementById('s-fallos').textContent = fallos;
+    renderDots();
+  }
 
-  const container = document.getElementById('text-container');
-  container.innerHTML = html;
-  totalBlanks = blankWords.length;
-  document.getElementById('total').textContent = totalBlanks;
-  document.getElementById('score').textContent = '0';
-
-  // Enter key moves to next blank
-  const inputs = container.querySelectorAll('input.blank');
-  inputs.forEach((inp, i) => {
-    inp.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        if (inputs[i + 1]) inputs[i + 1].focus();
-        else checkAnswers();
-      }
-    });
-    inp.addEventListener('input', () => {
-      inp.classList.remove('correct', 'wrong');
-      updateScore();
-    });
-  });
-}
-
-function updateScore() {
-  const inputs = document.querySelectorAll('input.blank');
-  let correct = 0;
-  inputs.forEach(inp => {
-    if (inp.value.trim().toLowerCase() === inp.dataset.answer) correct++;
-  });
-  document.getElementById('score').textContent = correct;
-  return correct;
-}
-
-function checkAnswers() {
-  const inputs = document.querySelectorAll('input.blank');
-  let newErrors = 0;
-  inputs.forEach(inp => {
-    if (inp.classList.contains('correct')) return;
-    const val = inp.value.trim().toLowerCase();
-    if (val === '') return;
-    if (val === inp.dataset.answer) {
-      inp.classList.add('correct');
-      inp.classList.remove('wrong');
-    } else {
-      inp.classList.add('wrong');
-      inp.classList.remove('correct');
-      newErrors++;
+  function renderDots() {
+    dotsContainer.innerHTML = '';
+    for (let i = 0; i < total; i++) {
+      const d = document.createElement('div');
+      d.className = 'dot';
+      if (i < goles) d.classList.add('gol');
+      else if (i < goles + fallos) d.classList.add('fallo');
+      dotsContainer.appendChild(d);
     }
-  });
-  errorCount += newErrors;
-  document.getElementById('errors').textContent = errorCount;
-
-  const correct = updateScore();
-  if (correct === totalBlanks) {
-    document.getElementById('message').textContent = '🎉 ¡Perfecto! ¡Has completado todos los huecos!';
-  } else {
-    document.getElementById('message').textContent = `✔ ${correct}/${totalBlanks} correctas. Sigue intentando...`;
   }
-}
 
-function revealAnswers() {
-  const inputs = document.querySelectorAll('input.blank');
-  inputs.forEach(inp => {
-    inp.value = inp.dataset.answer;
-    inp.classList.add('correct');
-    inp.classList.remove('wrong');
-  });
-  updateScore();
-  document.getElementById('message').textContent = '👁 Respuestas reveladas.';
-}
+  function endGame() {
+    gameOver = true;
+    if (goles > record) {
+      record = goles;
+      localStorage.setItem('futbol-record', record);
+      document.getElementById('s-record').textContent = record;
+    }
+    const pct = Math.round((goles / total) * 100);
+    const rating = pct === 100 ? '🏆 ¡Perfecto!' : pct >= 60 ? '⭐ ¡Buen trabajo!' : '💪 ¡Sigue entrenando!';
+    statusBar.innerHTML = `<strong>${goles}/${total} goles — ${rating}</strong>`;
+    shootBtn.textContent = '🔄 Jugar de nuevo';
+    shootBtn.disabled = false;
+    shootBtn.removeEventListener('click', doShoot);
+    shootBtn.addEventListener('click', resetGame);
+  }
 
-document.getElementById('btn-check').addEventListener('click', checkAnswers);
-document.getElementById('btn-reveal').addEventListener('click', revealAnswers);
-document.getElementById('btn-new').addEventListener('click', startGame);
-
-startGame();
+  function resetGame() {
+    goles = 0; fallos = 0; round = 1; gameOver = false; selectedZone = null;
+    document.getElementById('s-goles').textContent = 0;
+    document.getElementById('s-fallos').textContent = 0;
+    document.getElementById('s-ronda').textContent = '1/5';
+    statusBar.textContent = 'Elige una zona de la portería para disparar 🎯';
+    shootBtn.textContent = '— Elige dónde disparar arriba —';
+    shootBtn.disabled = true;
+    shootBtn.removeEventListener('click', resetGame);
+    shootBtn.addEventListener('click', doShoot);
+    renderDots();
+    zones.forEach(z => { z.style.pointerEvents = 'auto'; z.className = 'zone'; });
+    ball.style.cssText = 'font-size:30px; bottom:28px; left:50%; transform:translateX(-50%); transition:all 0.5s cubic-bezier(0.2,0.8,0.4,1); position:absolute; pointer-events:none; line-height:1;';
+    keeper.style.cssText = 'font-size:30px; top:105px; left:50%; transform:translateX(-50%); transition:left 0.25s ease-out; position:absolute; pointer-events:none; line-height:1;';
+  }
 </script>
 </body>
 </html>
