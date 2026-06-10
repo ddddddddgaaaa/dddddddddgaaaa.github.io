@@ -85,11 +85,47 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 /* Game mode overlays */
 .wall-block{position:absolute;top:0;left:0;width:0;height:0;background:rgba(30,30,30,0.75);pointer-events:none;border:2px solid rgba(255,255,255,0.2);border-radius:3px;transition:none;}
 
-#ball{position:absolute;font-size:28px;bottom:26px;left:50%;transform:translateX(-50%);transition:all 0.5s cubic-bezier(0.2,0.8,0.4,1);pointer-events:none;line-height:1;}
-#keeper{position:absolute;font-size:28px;top:100px;left:50%;transform:translateX(-50%);transition:left 0.22s ease-out;pointer-events:none;line-height:1;}
+#ball{position:absolute;font-size:28px;bottom:26px;left:50%;transform:translateX(-50%);pointer-events:none;line-height:1;transition:none;}
+#keeper{position:absolute;font-size:32px;bottom:112px;left:50%;transform:translateX(-50%);pointer-events:none;line-height:1;transition:none;}
 #result-msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:24px;font-weight:600;color:white;text-shadow:0 2px 8px rgba(0,0,0,0.7);background:rgba(0,0,0,0.55);padding:10px 22px;border-radius:10px;opacity:0;transition:opacity 0.2s;pointer-events:none;white-space:nowrap;}
 .timer-bar-wrap{position:absolute;bottom:0;left:0;right:0;height:4px;background:rgba(0,0,0,0.3);}
 #timer-bar{height:100%;background:var(--gold);transition:width 0.1s linear;width:100%;}
+#impact-ring{position:absolute;width:40px;height:40px;border-radius:50%;border:3px solid rgba(255,255,255,0.9);opacity:0;transform:translate(-50%,-50%) scale(0.3);pointer-events:none;transition:none;}
+
+@keyframes ball-fly{
+  0%  {bottom:26px; font-size:28px; opacity:1;}
+  40% {bottom:170px; font-size:20px; opacity:1;}
+  80% {bottom:var(--ball-top); font-size:13px; opacity:1;}
+  100%{bottom:var(--ball-top); font-size:13px; opacity:1;}
+}
+@keyframes keeper-jump-left{
+  0%  {bottom:112px; left:var(--kp-start); transform:translateX(-50%) rotate(0deg) scaleX(1);}
+  25% {bottom:155px; left:var(--kp-end);   transform:translateX(-50%) rotate(-25deg) scaleX(1);}
+  55% {bottom:var(--kp-top); left:var(--kp-end); transform:translateX(-50%) rotate(-40deg) scaleX(1);}
+  100%{bottom:var(--kp-top); left:var(--kp-end); transform:translateX(-50%) rotate(-40deg) scaleX(1);}
+}
+@keyframes keeper-jump-right{
+  0%  {bottom:112px; left:var(--kp-start); transform:translateX(-50%) rotate(0deg) scaleX(-1);}
+  25% {bottom:155px; left:var(--kp-end);   transform:translateX(-50%) rotate(25deg) scaleX(-1);}
+  55% {bottom:var(--kp-top); left:var(--kp-end); transform:translateX(-50%) rotate(40deg) scaleX(-1);}
+  100%{bottom:var(--kp-top); left:var(--kp-end); transform:translateX(-50%) rotate(40deg) scaleX(-1);}
+}
+@keyframes keeper-dive-center{
+  0%  {bottom:112px; left:var(--kp-start); transform:translateX(-50%) rotate(0deg);}
+  40% {bottom:135px; left:var(--kp-end);   transform:translateX(-50%) rotate(0deg);}
+  70% {bottom:var(--kp-top); left:var(--kp-end); transform:translateX(-50%) rotate(0deg);}
+  100%{bottom:var(--kp-top); left:var(--kp-end); transform:translateX(-50%) rotate(0deg);}
+}
+@keyframes impact-burst{
+  0%  {opacity:0.9; transform:translate(-50%,-50%) scale(0.3);}
+  60% {opacity:0.6; transform:translate(-50%,-50%) scale(1.6);}
+  100%{opacity:0;   transform:translate(-50%,-50%) scale(2.2);}
+}
+@keyframes keeper-bounce-back{
+  0%  {bottom:var(--kp-top);}
+  50% {bottom:calc(var(--kp-top) + 12px);}
+  100%{bottom:112px; left:50%;}
+}
 
 /* Scoreboard */
 #scoreboard{display:flex;gap:8px;margin-top:12px;width:100%;}
@@ -211,8 +247,9 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
       <div class="zone" data-z="4"></div>
       <div class="zone" data-z="5"></div>
     </div>
-    <div id="keeper">🧤</div>
+    <div id="keeper" style="bottom:112px;top:auto;">🧤</div>
     <div id="ball">⚽</div>
+    <div id="impact-ring"></div>
     <div id="result-msg"></div>
     <div class="penalty-spot"></div>
     <div class="timer-bar-wrap"><div id="timer-bar" style="width:0"></div></div>
@@ -399,8 +436,13 @@ function resetGameState(){
 }
 
 function resetBallKeeper(){
-  ball.style.cssText='font-size:28px;bottom:26px;left:50%;transform:translateX(-50%);transition:all 0.5s cubic-bezier(0.2,0.8,0.4,1);pointer-events:none;position:absolute;line-height:1;';
-  keeper.style.cssText='font-size:28px;top:100px;left:50%;transform:translateX(-50%);transition:left 0.22s ease-out;pointer-events:none;position:absolute;line-height:1;';
+  ball.style.animation='none';
+  ball.style.cssText='font-size:28px;bottom:26px;left:50%;transform:translateX(-50%);pointer-events:none;position:absolute;line-height:1;transition:none;';
+  keeper.style.animation='none';
+  keeper.style.cssText='font-size:32px;bottom:112px;left:50%;transform:translateX(-50%);pointer-events:none;position:absolute;line-height:1;transition:none;';
+  const ring = document.getElementById('impact-ring');
+  ring.style.animation='none';
+  ring.style.opacity='0';
 }
 
 // ========= WALLS (Barrera mode) =========
@@ -472,27 +514,49 @@ function doShoot(){
   const saved = keeperSaves(selectedZone);
   const field = document.getElementById('field');
   const fw = field.offsetWidth;
+  const fh = field.offsetHeight;
   const pos = zonePositions[selectedZone];
-  const leftPx = (parseFloat(pos.left)/100)*fw;
-  ball.style.bottom='230px';
-  ball.style.left=(leftPx-14)+'px';
-  ball.style.fontSize='13px';
+  const ballTargetLeft = (parseFloat(pos.left)/100)*fw - 14;
+  const ballTargetBottom = fh - parseInt(pos.top) - 14;
 
-  // Move keeper
-  if(gameMode==='rapido'){
-    // keeper moves instantly
-    keeper.style.transition='left 0.05s';
-  } else {
-    keeper.style.transition='left 0.22s ease-out';
-  }
-  const keeperTarget = saved ? selectedZone : Math.floor(Math.random()*6);
-  const kpx=(parseFloat(zonePositions[keeperTarget].left)/100)*fw;
-  keeper.style.left=(kpx-14)+'px';
-  keeper.style.transform='none';
+  // ---- BALL ANIMATION ----
+  ball.style.setProperty('--ball-top', ballTargetBottom+'px');
+  ball.style.left = ballTargetLeft+'px';
+  const ballDur = gameMode==='rapido' ? 0.38 : 0.58;
+  ball.style.animation = `ball-fly ${ballDur}s cubic-bezier(0.3,0.7,0.5,1) forwards`;
 
-  const delay = gameMode==='rapido' ? 350 : 550;
+  // ---- KEEPER ANIMATION ----
+  const keeperChoice = saved ? selectedZone : Math.floor(Math.random()*6);
+  const kpTargetLeft = (parseFloat(zonePositions[keeperChoice].left)/100)*fw - 16;
+  const kpTargetBottom = fh - parseInt(zonePositions[keeperChoice].top) - 16;
+  const kpStartPct = 50; // center %
+  const kpStartPx = fw * kpStartPct/100;
+  const goingLeft = kpTargetLeft < kpStartPx;
+  const goingRight = kpTargetLeft > kpStartPx + 20;
+  const kpDur = gameMode==='rapido' ? 0.32 : 0.48;
+
+  keeper.style.setProperty('--kp-start', kpStartPx+'px');
+  keeper.style.setProperty('--kp-end', kpTargetLeft+'px');
+  keeper.style.setProperty('--kp-top', kpTargetBottom+'px');
+
+  let kpAnim;
+  if(goingLeft) kpAnim = `keeper-jump-left ${kpDur}s cubic-bezier(0.25,0.8,0.4,1) forwards`;
+  else if(goingRight) kpAnim = `keeper-jump-right ${kpDur}s cubic-bezier(0.25,0.8,0.4,1) forwards`;
+  else kpAnim = `keeper-dive-center ${kpDur}s cubic-bezier(0.25,0.8,0.4,1) forwards`;
+  keeper.style.animation = kpAnim;
+
+  const impactDelay = gameMode==='rapido' ? 340 : 520;
 
   setTimeout(()=>{
+    // ---- IMPACT RING ----
+    const ring = document.getElementById('impact-ring');
+    ring.style.left = (ballTargetLeft+14)+'px';
+    ring.style.bottom = (ballTargetBottom+14)+'px';
+    ring.style.borderColor = saved ? 'rgba(255,140,0,0.9)' : 'rgba(80,255,120,0.9)';
+    ring.style.animation = 'none';
+    void ring.offsetWidth;
+    ring.style.animation = 'impact-burst 0.5s ease-out forwards';
+
     zones[selectedZone].classList.remove('selected');
     zones[selectedZone].classList.add(saved?'saved':'hit');
 
@@ -511,7 +575,7 @@ function doShoot(){
       if(gameType==='supervivencia'){
         lives--;
         renderLives();
-        if(lives<=0){ setTimeout(()=>endGame(),800); return; }
+        if(lives<=0){ setTimeout(()=>endGame(),900); return; }
       }
     }
 
@@ -521,7 +585,7 @@ function doShoot(){
     round++;
     updateRoundDisplay();
 
-    const recover = gameMode==='rapido' ? 900 : 1500;
+    const recover = gameMode==='rapido' ? 950 : 1600;
     setTimeout(()=>{
       if(gameOver) return;
       resultMsg.style.opacity='0';
@@ -540,7 +604,7 @@ function doShoot(){
       else if(gameType==='contrarreloj' && !timerRunning) {}
       else renderDots();
     }, recover);
-  }, delay);
+  }, impactDelay);
 }
 
 function updateRoundDisplay(){
