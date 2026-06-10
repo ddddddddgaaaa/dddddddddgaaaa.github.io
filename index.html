@@ -3,393 +3,630 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Penaltis ⚽</title>
+<title>Fútbol Arcade</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --green:#1a7a3e;--green-light:#2d9e55;--green-dark:#0f4f28;
+  --gold:#f0c040;--gold-dark:#b88a00;
+  --red:#c0392b;--blue:#1a5fa8;
+  --bg:#08111f;--bg2:#0f1e35;--bg3:#162840;
+  --text:#e8f4ec;--muted:rgba(255,255,255,0.45);
+  --border:rgba(255,255,255,0.1);
+}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;}
 
-  body {
-    font-family: system-ui, -apple-system, sans-serif;
-    background: #0a1628;
-    color: #fff;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
+/* ========= SCREENS ========= */
+.screen{width:100%;max-width:520px;padding:24px 20px;display:none;flex-direction:column;align-items:center;}
+.screen.active{display:flex;}
 
-  h1 {
-    font-size: 22px;
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: #a8d8a8;
-    margin-bottom: 18px;
-    text-align: center;
-  }
+/* ========= MENU ========= */
+#screen-menu{gap:0;}
+.menu-hero{text-align:center;padding:32px 0 24px;}
+.menu-hero .stadium{font-size:52px;line-height:1;}
+.menu-hero h1{font-size:26px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);margin-top:10px;}
+.menu-hero p{font-size:13px;color:var(--muted);margin-top:4px;letter-spacing:0.04em;}
 
-  #field {
-    background: #2d8a4e;
-    border-radius: 12px;
-    position: relative;
-    width: 100%;
-    max-width: 480px;
-    height: 300px;
-    overflow: hidden;
-    border: 2px solid #1f6b3a;
-  }
+.section-label{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);width:100%;margin:18px 0 10px;}
 
-  #field::before {
-    content: '';
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 80px; height: 80px;
-    border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.12);
-    pointer-events: none;
-  }
+/* Game cards */
+.game-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;}
+.game-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px 14px 14px;cursor:pointer;transition:border-color 0.15s,background 0.15s;position:relative;overflow:hidden;}
+.game-card:hover{border-color:var(--green-light);background:var(--bg3);}
+.game-card .icon{font-size:28px;line-height:1;margin-bottom:8px;}
+.game-card h3{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.game-card p{font-size:12px;color:var(--muted);line-height:1.4;}
+.game-card .badge{position:absolute;top:10px;right:10px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;letter-spacing:0.05em;}
+.badge-new{background:rgba(240,192,64,0.18);color:var(--gold);border:1px solid rgba(240,192,64,0.3);}
+.badge-hot{background:rgba(220,60,40,0.18);color:#ff7755;border:1px solid rgba(220,60,40,0.3);}
 
-  #field::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 50%;
-    transform: translateX(-50%);
-    width: 2px; height: 100%;
-    background: rgba(255,255,255,0.08);
-    pointer-events: none;
-  }
+/* Mode pills */
+.mode-row{display:flex;gap:8px;width:100%;flex-wrap:wrap;}
+.mode-pill{flex:1;min-width:80px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 8px;cursor:pointer;text-align:center;transition:all 0.15s;}
+.mode-pill:hover,.mode-pill.active{border-color:var(--green-light);background:var(--bg3);}
+.mode-pill .m-icon{font-size:20px;}
+.mode-pill .m-label{font-size:11px;color:var(--muted);margin-top:4px;display:block;}
+.mode-pill.active .m-label{color:var(--green-light);}
 
-  #goal {
-    position: absolute;
-    top: 18px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 270px;
-    height: 95px;
-    border: 4px solid white;
-    border-bottom: none;
-    border-radius: 2px 2px 0 0;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 2px;
-    padding: 4px;
-  }
+/* Difficulty */
+.diff-row{display:flex;gap:8px;width:100%;}
+.diff-btn{flex:1;padding:9px 6px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;text-align:center;}
+.diff-btn.active.easy{border-color:#2d9e55;color:#2d9e55;background:rgba(45,158,85,0.1);}
+.diff-btn.active.med{border-color:var(--gold);color:var(--gold);background:rgba(240,192,64,0.1);}
+.diff-btn.active.hard{border-color:#ff5533;color:#ff5533;background:rgba(255,85,51,0.1);}
+.diff-btn:hover{border-color:rgba(255,255,255,0.25);}
 
-  .zone {
-    border: 1.5px solid rgba(255,255,255,0.3);
-    border-radius: 3px;
-    cursor: pointer;
-    transition: background 0.15s;
-    position: relative;
-  }
+.play-btn{width:100%;margin-top:18px;padding:14px;font-size:16px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border-radius:12px;background:var(--green);border:1.5px solid var(--green-light);color:#fff;transition:background 0.15s;}
+.play-btn:hover{background:var(--green-light);}
 
-  .zone:hover { background: rgba(255,255,255,0.18); }
-  .zone.selected { background: rgba(255,255,0,0.2); border-color: yellow; }
-  .zone.hit { background: rgba(0,220,80,0.6) !important; }
-  .zone.saved { background: rgba(255,160,0,0.6) !important; }
+/* ========= GAME SCREEN ========= */
+#screen-game{gap:0;}
+.topbar{display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:14px;}
+.back-btn{background:none;border:1px solid var(--border);color:var(--muted);font-size:13px;padding:6px 12px;border-radius:8px;cursor:pointer;transition:all 0.15s;}
+.back-btn:hover{border-color:rgba(255,255,255,0.3);color:var(--text);}
+.game-title-small{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:0.05em;text-transform:uppercase;}
+.lives-row{display:flex;gap:4px;}
+.life{font-size:16px;opacity:0.3;transition:opacity 0.3s;}
+.life.on{opacity:1;}
 
-  #ball {
-    position: absolute;
-    font-size: 30px;
-    bottom: 28px;
-    left: 50%;
-    transform: translateX(-50%);
-    transition: all 0.5s cubic-bezier(0.2,0.8,0.4,1);
-    pointer-events: none;
-    line-height: 1;
-  }
+/* Field */
+#field{background:var(--green);border-radius:12px;position:relative;width:100%;height:280px;overflow:hidden;border:2px solid var(--green-dark);}
+#field::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:1px;height:100%;background:rgba(255,255,255,0.07);pointer-events:none;}
+.penalty-spot{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);width:6px;height:6px;background:rgba(255,255,255,0.5);border-radius:50%;pointer-events:none;}
 
-  #keeper {
-    position: absolute;
-    font-size: 30px;
-    top: 105px;
-    left: 50%;
-    transform: translateX(-50%);
-    transition: left 0.25s ease-out;
-    pointer-events: none;
-    line-height: 1;
-  }
+#goal{position:absolute;top:16px;left:50%;transform:translateX(-50%);width:268px;height:92px;border:4px solid white;border-bottom:none;border-radius:2px 2px 0 0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:2px;padding:4px;}
+.zone{border:1.5px solid rgba(255,255,255,0.25);border-radius:3px;cursor:pointer;transition:background 0.12s;}
+.zone:hover{background:rgba(255,255,255,0.18);}
+.zone.selected{background:rgba(255,255,0,0.18);border-color:rgba(255,255,0,0.6);}
+.zone.hit{background:rgba(0,220,80,0.65)!important;}
+.zone.saved{background:rgba(255,140,0,0.65)!important;}
+.zone.blocked{background:rgba(200,0,0,0.5)!important;}
 
-  #result-msg {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 26px;
-    font-weight: 500;
-    color: white;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.6);
-    background: rgba(0,0,0,0.5);
-    padding: 10px 22px;
-    border-radius: 10px;
-    opacity: 0;
-    transition: opacity 0.25s;
-    pointer-events: none;
-    white-space: nowrap;
-  }
+/* Game mode overlays */
+.wall-block{position:absolute;top:0;left:0;width:0;height:0;background:rgba(30,30,30,0.75);pointer-events:none;border:2px solid rgba(255,255,255,0.2);border-radius:3px;transition:none;}
 
-  #scoreboard {
-    display: flex;
-    gap: 10px;
-    margin-top: 14px;
-    width: 100%;
-    max-width: 480px;
-  }
+#ball{position:absolute;font-size:28px;bottom:26px;left:50%;transform:translateX(-50%);transition:all 0.5s cubic-bezier(0.2,0.8,0.4,1);pointer-events:none;line-height:1;}
+#keeper{position:absolute;font-size:28px;top:100px;left:50%;transform:translateX(-50%);transition:left 0.22s ease-out;pointer-events:none;line-height:1;}
+#result-msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:24px;font-weight:600;color:white;text-shadow:0 2px 8px rgba(0,0,0,0.7);background:rgba(0,0,0,0.55);padding:10px 22px;border-radius:10px;opacity:0;transition:opacity 0.2s;pointer-events:none;white-space:nowrap;}
+.timer-bar-wrap{position:absolute;bottom:0;left:0;right:0;height:4px;background:rgba(0,0,0,0.3);}
+#timer-bar{height:100%;background:var(--gold);transition:width 0.1s linear;width:100%;}
 
-  .score-card {
-    flex: 1;
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 10px;
-    padding: 10px 8px;
-    text-align: center;
-  }
+/* Scoreboard */
+#scoreboard{display:flex;gap:8px;margin-top:12px;width:100%;}
+.sc{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:8px 6px;text-align:center;}
+.sc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;}
+.sc-val{font-size:24px;font-weight:600;color:#a8d8a8;line-height:1.2;}
 
-  .score-label {
-    font-size: 11px;
-    color: rgba(255,255,255,0.5);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
+#dots-row{display:flex;gap:7px;justify-content:center;margin-top:10px;}
+.dot{width:13px;height:13px;border-radius:50%;background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.18);}
+.dot.gol{background:#2d9e55;border-color:#a8d8a8;}
+.dot.fallo{background:#c0392b;border-color:#e74c3c;}
 
-  .score-val {
-    font-size: 28px;
-    font-weight: 500;
-    color: #a8d8a8;
-    line-height: 1.2;
-  }
+#status-bar{font-size:13px;color:var(--muted);margin-top:8px;min-height:18px;text-align:center;width:100%;}
+#shoot-btn{margin-top:10px;width:100%;padding:12px;font-size:14px;font-weight:600;cursor:pointer;border-radius:10px;background:var(--green-dark);border:1.5px solid var(--green);color:#a8d8a8;letter-spacing:0.04em;transition:background 0.15s,opacity 0.15s;}
+#shoot-btn:hover:not(:disabled){background:var(--green);}
+#shoot-btn:disabled{opacity:0.3;cursor:default;}
 
-  #series-dots {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    margin-top: 12px;
-  }
+/* ========= RESULTS SCREEN ========= */
+#screen-results{gap:12px;text-align:center;}
+.result-trophy{font-size:64px;margin-bottom:8px;}
+.result-title{font-size:22px;font-weight:600;color:var(--gold);}
+.result-sub{font-size:14px;color:var(--muted);margin-top:4px;}
+.result-stats{display:flex;gap:10px;width:100%;margin-top:8px;}
+.r-stat{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 8px;}
+.r-stat-val{font-size:26px;font-weight:600;color:var(--text);}
+.r-stat-label{font-size:11px;color:var(--muted);margin-top:2px;}
+.result-btns{display:flex;gap:8px;width:100%;margin-top:6px;}
+.result-btns button{flex:1;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;}
+#btn-retry{background:var(--green);border:1.5px solid var(--green-light);color:#fff;}
+#btn-retry:hover{background:var(--green-light);}
+#btn-menu2{background:var(--bg2);border:1px solid var(--border);color:var(--muted);}
+#btn-menu2:hover{border-color:rgba(255,255,255,0.3);color:var(--text);}
 
-  .dot {
-    width: 14px; height: 14px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.15);
-    border: 1.5px solid rgba(255,255,255,0.2);
-    transition: background 0.3s;
-  }
-
-  .dot.gol { background: #2d8a4e; border-color: #a8d8a8; }
-  .dot.fallo { background: #c0392b; border-color: #e74c3c; }
-
-  #status-bar {
-    font-size: 14px;
-    color: rgba(255,255,255,0.55);
-    margin-top: 10px;
-    min-height: 20px;
-    text-align: center;
-    max-width: 480px;
-    width: 100%;
-  }
-
-  #shoot-btn {
-    margin-top: 12px;
-    width: 100%;
-    max-width: 480px;
-    padding: 12px;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    border-radius: 10px;
-    background: #1f6b3a;
-    border: 1.5px solid #2d8a4e;
-    color: #a8d8a8;
-    letter-spacing: 0.04em;
-    transition: background 0.15s, opacity 0.15s;
-  }
-
-  #shoot-btn:hover:not(:disabled) { background: #256e40; }
-  #shoot-btn:disabled { opacity: 0.35; cursor: default; }
+/* Animations */
+@keyframes pop{0%{transform:translate(-50%,-50%) scale(0.7);}60%{transform:translate(-50%,-50%) scale(1.08);}100%{transform:translate(-50%,-50%) scale(1);}}
+.pop{animation:pop 0.3s ease-out forwards;}
 </style>
 </head>
 <body>
 
-<h1>⚽ Penaltis</h1>
-
-<div id="field">
-  <div id="goal">
-    <div class="zone" data-z="0"></div>
-    <div class="zone" data-z="1"></div>
-    <div class="zone" data-z="2"></div>
-    <div class="zone" data-z="3"></div>
-    <div class="zone" data-z="4"></div>
-    <div class="zone" data-z="5"></div>
+<!-- ===== MENU ===== -->
+<div class="screen active" id="screen-menu">
+  <div class="menu-hero">
+    <div class="stadium">🏟️</div>
+    <h1>Fútbol Arcade</h1>
+    <p>Elige tu modo y demuestra tu puntería</p>
   </div>
-  <div id="keeper">🧤</div>
-  <div id="ball">⚽</div>
-  <div id="result-msg"></div>
+
+  <div class="section-label">Tipo de juego</div>
+  <div class="game-grid">
+    <div class="game-card" data-game="penaltis">
+      <div class="badge badge-hot">HOT</div>
+      <div class="icon">⚽</div>
+      <h3>Penaltis</h3>
+      <p>5 tiros al arco, elige dónde disparar</p>
+    </div>
+    <div class="game-card" data-game="supervivencia">
+      <div class="badge badge-new">NEW</div>
+      <div class="icon">💀</div>
+      <h3>Supervivencia</h3>
+      <p>Mete goles seguidos sin fallar</p>
+    </div>
+    <div class="game-card" data-game="contrarreloj">
+      <div class="icon">⏱️</div>
+      <h3>Contrarreloj</h3>
+      <p>Máximos goles en 60 segundos</p>
+    </div>
+    <div class="game-card" data-game="muro">
+      <div class="icon">🧱</div>
+      <h3>Barrera</h3>
+      <p>Zonas bloqueadas, apunta bien</p>
+    </div>
+  </div>
+
+  <div class="section-label">Modo</div>
+  <div class="mode-row">
+    <div class="mode-pill active" data-mode="normal">
+      <div class="m-icon">🥅</div>
+      <span class="m-label">Normal</span>
+    </div>
+    <div class="mode-pill" data-mode="rapido">
+      <div class="m-icon">⚡</div>
+      <span class="m-label">Rápido</span>
+    </div>
+    <div class="mode-pill" data-mode="preciso">
+      <div class="m-icon">🎯</div>
+      <span class="m-label">Preciso</span>
+    </div>
+    <div class="mode-pill" data-mode="caos">
+      <div class="m-icon">🔀</div>
+      <span class="m-label">Caos</span>
+    </div>
+  </div>
+
+  <div class="section-label">Dificultad</div>
+  <div class="diff-row">
+    <button class="diff-btn active easy" data-diff="facil">😎 Fácil</button>
+    <button class="diff-btn med" data-diff="medio">🔥 Medio</button>
+    <button class="diff-btn hard" data-diff="dificil">💀 Difícil</button>
+  </div>
+
+  <button class="play-btn" id="btn-play">▶ JUGAR</button>
 </div>
 
-<div id="scoreboard">
-  <div class="score-card"><div class="score-label">Goles</div><div class="score-val" id="s-goles">0</div></div>
-  <div class="score-card"><div class="score-label">Fallos</div><div class="score-val" id="s-fallos">0</div></div>
-  <div class="score-card"><div class="score-label">Ronda</div><div class="score-val" id="s-ronda">1/5</div></div>
-  <div class="score-card"><div class="score-label">Récord</div><div class="score-val" id="s-record">0</div></div>
+<!-- ===== GAME ===== -->
+<div class="screen" id="screen-game">
+  <div class="topbar">
+    <button class="back-btn" id="btn-back">← Menú</button>
+    <span class="game-title-small" id="game-title-bar">Penaltis</span>
+    <div class="lives-row" id="lives-row"></div>
+  </div>
+
+  <div id="field">
+    <div id="goal">
+      <div class="zone" data-z="0"></div>
+      <div class="zone" data-z="1"></div>
+      <div class="zone" data-z="2"></div>
+      <div class="zone" data-z="3"></div>
+      <div class="zone" data-z="4"></div>
+      <div class="zone" data-z="5"></div>
+    </div>
+    <div id="keeper">🧤</div>
+    <div id="ball">⚽</div>
+    <div id="result-msg"></div>
+    <div class="penalty-spot"></div>
+    <div class="timer-bar-wrap"><div id="timer-bar" style="width:0"></div></div>
+  </div>
+
+  <div id="scoreboard">
+    <div class="sc"><div class="sc-label" id="sc1-label">Goles</div><div class="sc-val" id="sc1-val">0</div></div>
+    <div class="sc"><div class="sc-label" id="sc2-label">Fallos</div><div class="sc-val" id="sc2-val">0</div></div>
+    <div class="sc"><div class="sc-label" id="sc3-label">Ronda</div><div class="sc-val" id="sc3-val">1/5</div></div>
+    <div class="sc"><div class="sc-label">Récord</div><div class="sc-val" id="sc-record">0</div></div>
+  </div>
+
+  <div id="dots-row"></div>
+  <div id="status-bar">Elige una zona y dispara 🎯</div>
+  <button id="shoot-btn" disabled>— Elige dónde disparar —</button>
 </div>
 
-<div id="series-dots"></div>
-<div id="status-bar">Elige una zona de la portería para disparar 🎯</div>
-<button id="shoot-btn" disabled>— Elige dónde disparar arriba —</button>
+<!-- ===== RESULTS ===== -->
+<div class="screen" id="screen-results">
+  <div class="result-trophy" id="r-trophy">🏆</div>
+  <div class="result-title" id="r-title">¡Finalizado!</div>
+  <div class="result-sub" id="r-sub">Buen partido</div>
+  <div class="result-stats">
+    <div class="r-stat"><div class="r-stat-val" id="r-goles">0</div><div class="r-stat-label">Goles</div></div>
+    <div class="r-stat"><div class="r-stat-val" id="r-fallos">0</div><div class="r-stat-label">Fallos</div></div>
+    <div class="r-stat"><div class="r-stat-val" id="r-pct">0%</div><div class="r-stat-label">Precisión</div></div>
+    <div class="r-stat"><div class="r-stat-val" id="r-record">0</div><div class="r-stat-label">Récord</div></div>
+  </div>
+  <div class="result-btns">
+    <button id="btn-retry">🔄 Repetir</button>
+    <button id="btn-menu2">🏠 Menú</button>
+  </div>
+</div>
 
 <script>
-  const zones = document.querySelectorAll('.zone');
-  const ball = document.getElementById('ball');
-  const keeper = document.getElementById('keeper');
-  const resultMsg = document.getElementById('result-msg');
-  const statusBar = document.getElementById('status-bar');
-  const shootBtn = document.getElementById('shoot-btn');
-  const dotsContainer = document.getElementById('series-dots');
+// ========= STATE =========
+let gameType = 'penaltis';
+let gameMode = 'normal';
+let gameDiff = 'facil';
+let goles = 0, fallos = 0, round = 1, lives = 3;
+let totalRounds = 5;
+let selectedZone = null, shooting = false, gameOver = false;
+let timerInterval = null, timerLeft = 60, timerRunning = false;
+let streak = 0;
+let record = {};
+const RKEY = 'futbol-arcade-record';
+try { record = JSON.parse(localStorage.getItem(RKEY) || '{}'); } catch(e){}
 
-  let goles = 0, fallos = 0, round = 1, total = 5;
-  let record = parseInt(localStorage.getItem('futbol-record') || '0');
-  let selectedZone = null, shooting = false, gameOver = false;
+// ========= DOM =========
+const screens = { menu:'screen-menu', game:'screen-game', results:'screen-results' };
+const zones = document.querySelectorAll('.zone');
+const ball = document.getElementById('ball');
+const keeper = document.getElementById('keeper');
+const resultMsg = document.getElementById('result-msg');
+const statusBar = document.getElementById('status-bar');
+const shootBtn = document.getElementById('shoot-btn');
+const timerBar = document.getElementById('timer-bar');
 
-  document.getElementById('s-record').textContent = record;
-  renderDots();
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(screens[name]).classList.add('active');
+}
 
-  const zonePositions = [
-    { left: '28%', top: '22px' }, { left: '50%', top: '22px' }, { left: '72%', top: '22px' },
-    { left: '28%', top: '72px' }, { left: '50%', top: '72px' }, { left: '72%', top: '72px' }
-  ];
-
-  zones.forEach((z, i) => {
-    z.addEventListener('click', () => {
-      if (shooting || gameOver) return;
-      zones.forEach(z2 => z2.classList.remove('selected'));
-      z.classList.add('selected');
-      selectedZone = i;
-      shootBtn.disabled = false;
-      statusBar.textContent = '¡Listo! Pulsa Disparar ⚽';
-    });
+// ========= MENU LOGIC =========
+document.querySelectorAll('.game-card').forEach(c=>{
+  c.addEventListener('click', ()=>{
+    document.querySelectorAll('.game-card').forEach(x=>x.style.borderColor='');
+    c.style.borderColor='#2d9e55';
+    gameType = c.dataset.game;
   });
+});
+document.querySelectorAll('.mode-pill').forEach(p=>{
+  p.addEventListener('click', ()=>{
+    document.querySelectorAll('.mode-pill').forEach(x=>x.classList.remove('active'));
+    p.classList.add('active');
+    gameMode = p.dataset.mode;
+  });
+});
+document.querySelectorAll('.diff-btn').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('.diff-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active','easy','med','hard');
+    ['easy','med','hard'].forEach(c=>b.classList.remove(c));
+    const map = {facil:'easy',medio:'med',dificil:'hard'};
+    b.classList.add(map[b.dataset.diff]);
+    b.classList.add('active');
+    gameDiff = b.dataset.diff;
+  });
+});
 
-  shootBtn.addEventListener('click', doShoot);
+// Fix diff-btn toggle properly
+document.querySelectorAll('.diff-btn').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('.diff-btn').forEach(x=>{
+      x.classList.remove('active');
+    });
+    b.classList.add('active');
+    gameDiff = b.dataset.diff;
+  });
+});
 
-  function doShoot() {
-    if (selectedZone === null || shooting || gameOver) return;
-    shooting = true;
-    shootBtn.disabled = true;
-    zones.forEach(z => z.style.pointerEvents = 'none');
+document.getElementById('btn-play').addEventListener('click', startGame);
+document.getElementById('btn-back').addEventListener('click', ()=>{
+  clearTimerInterval();
+  showScreen('menu');
+  resetGameState();
+});
+document.getElementById('btn-menu2').addEventListener('click', ()=>showScreen('menu'));
+document.getElementById('btn-retry').addEventListener('click', startGame);
+shootBtn.addEventListener('click', doShoot);
 
-    const keeperChoice = Math.floor(Math.random() * 6);
-    const saved = keeperChoice === selectedZone;
+// ========= GAME SETUP =========
+function keeperSaves(zoneIdx){
+  const diff = { facil: 2, medio: 3, dificil: 5 }[gameDiff];
+  // In caos mode, keeper is more erratic
+  if(gameMode === 'caos'){
+    // randomly guesses any 2 zones
+    const picks = [];
+    while(picks.length < 2){ const r=Math.floor(Math.random()*6); if(!picks.includes(r))picks.push(r); }
+    return picks.includes(zoneIdx);
+  }
+  // keeper picks diff zones, one biased toward player's zone
+  const zones_picked = new Set();
+  // small chance to nail it based on difficulty
+  const hitChance = {facil:0.2, medio:0.4, dificil:0.65}[gameDiff];
+  if(Math.random() < hitChance) zones_picked.add(zoneIdx);
+  while(zones_picked.size < diff){ zones_picked.add(Math.floor(Math.random()*6)); }
+  return zones_picked.has(zoneIdx);
+}
 
-    const field = document.getElementById('field');
-    const fw = field.offsetWidth;
-    const pos = zonePositions[selectedZone];
-    const leftPx = (parseFloat(pos.left) / 100) * fw;
-    ball.style.bottom = '230px';
-    ball.style.left = (leftPx - 15) + 'px';
-    ball.style.fontSize = '14px';
+function startGame(){
+  resetGameState();
+  setupGameUI();
+  showScreen('game');
+  // Set initial wall blocks if mode=muro
+  if(gameType === 'muro') applyWalls();
+  if(gameType === 'contrarreloj') startTimer();
+}
 
-    const kpx = (parseFloat(zonePositions[keeperChoice].left) / 100) * fw;
-    keeper.style.left = (kpx - 15) + 'px';
-    keeper.style.transform = 'none';
+function setupGameUI(){
+  const titles = {penaltis:'Penaltis', supervivencia:'Supervivencia', contrarreloj:'Contrarreloj', muro:'Barrera'};
+  document.getElementById('game-title-bar').textContent = titles[gameType];
+  updateScoreLabels();
+  updateRecord();
+  renderDots();
+  renderLives();
+  statusBar.textContent = 'Elige una zona y dispara 🎯';
+  shootBtn.disabled = true;
+  shootBtn.textContent = '— Elige dónde disparar —';
+  timerBar.style.width = '0';
+  if(gameType === 'contrarreloj'){ timerBar.style.width='100%'; }
+}
 
-    setTimeout(() => {
-      zones[selectedZone].classList.remove('selected');
-      zones[selectedZone].classList.add(saved ? 'saved' : 'hit');
+function updateScoreLabels(){
+  const t = gameType;
+  document.getElementById('sc1-label').textContent = 'Goles';
+  document.getElementById('sc2-label').textContent = t==='supervivencia'?'Racha':'Fallos';
+  document.getElementById('sc3-label').textContent = t==='contrarreloj'?'Tiempo':t==='supervivencia'?'Vidas':'Ronda';
+}
 
-      if (!saved) {
-        goles++;
-        showMsg('⚽ ¡GOOOOOL!');
-        flashField('#1a6b3e');
-      } else {
-        fallos++;
-        showMsg('🧤 ¡Parada!');
-        flashField('#7a1a1a');
+function renderLives(){
+  const livesRow = document.getElementById('lives-row');
+  livesRow.innerHTML = '';
+  if(gameType !== 'supervivencia') return;
+  for(let i=0;i<3;i++){
+    const l = document.createElement('span');
+    l.className = 'life' + (i < lives ? ' on' : '');
+    l.textContent = '❤️';
+    livesRow.appendChild(l);
+  }
+}
+
+function resetGameState(){
+  clearTimerInterval();
+  goles=0; fallos=0; round=1; lives=3; selectedZone=null; shooting=false; gameOver=false; streak=0; timerLeft=60;
+  totalRounds = gameType==='contrarreloj' ? 999 : gameType==='supervivencia' ? 999 : 5;
+  document.getElementById('sc1-val').textContent='0';
+  document.getElementById('sc2-val').textContent='0';
+  document.getElementById('sc3-val').textContent= gameType==='contrarreloj'?'60s':'1/5';
+  resetBallKeeper();
+  zones.forEach(z=>{ z.className='zone'; z.style.pointerEvents='auto'; });
+  removeWalls();
+  resultMsg.style.opacity='0';
+}
+
+function resetBallKeeper(){
+  ball.style.cssText='font-size:28px;bottom:26px;left:50%;transform:translateX(-50%);transition:all 0.5s cubic-bezier(0.2,0.8,0.4,1);pointer-events:none;position:absolute;line-height:1;';
+  keeper.style.cssText='font-size:28px;top:100px;left:50%;transform:translateX(-50%);transition:left 0.22s ease-out;pointer-events:none;position:absolute;line-height:1;';
+}
+
+// ========= WALLS (Barrera mode) =========
+function applyWalls(){
+  removeWalls();
+  const goal = document.getElementById('goal');
+  const zoneEls = goal.querySelectorAll('.zone');
+  const count = {facil:1, medio:2, dificil:3}[gameDiff];
+  const blocked = new Set();
+  while(blocked.size < count){ blocked.add(Math.floor(Math.random()*6)); }
+  blocked.forEach(idx=>{
+    zoneEls[idx].classList.add('blocked');
+    zoneEls[idx].style.background='rgba(30,30,30,0.75)';
+    zoneEls[idx].style.pointerEvents='none';
+    zoneEls[idx].setAttribute('data-blocked','1');
+  });
+}
+
+function removeWalls(){
+  zones.forEach(z=>{ z.removeAttribute('data-blocked'); z.style.background=''; });
+}
+
+// ========= TIMER =========
+function startTimer(){
+  timerLeft = 60;
+  timerBar.style.transition='none';
+  timerBar.style.width='100%';
+  timerRunning = true;
+  document.getElementById('sc3-val').textContent='60s';
+  timerInterval = setInterval(()=>{
+    timerLeft--;
+    document.getElementById('sc3-val').textContent=timerLeft+'s';
+    timerBar.style.transition='width 1s linear';
+    timerBar.style.width=(timerLeft/60*100)+'%';
+    if(timerLeft<=10) timerBar.style.background='#ff5533';
+    if(timerLeft<=0){ clearTimerInterval(); endGame(); }
+  }, 1000);
+}
+
+function clearTimerInterval(){
+  if(timerInterval){ clearInterval(timerInterval); timerInterval=null; timerRunning=false; }
+}
+
+// ========= ZONE SELECTION =========
+zones.forEach((z,i)=>{
+  z.addEventListener('click',()=>{
+    if(shooting||gameOver||z.getAttribute('data-blocked')) return;
+    zones.forEach(z2=>z2.classList.remove('selected'));
+    z.classList.add('selected');
+    selectedZone=i;
+    shootBtn.disabled=false;
+    shootBtn.textContent='⚽ ¡DISPARAR!';
+    statusBar.textContent='¡Listo! Pulsa disparar';
+  });
+});
+
+// ========= SHOOT =========
+const zonePositions=[
+  {left:'28%',top:'22px'},{left:'50%',top:'22px'},{left:'72%',top:'22px'},
+  {left:'28%',top:'68px'},{left:'50%',top:'68px'},{left:'72%',top:'68px'}
+];
+
+function doShoot(){
+  if(selectedZone===null||shooting||gameOver) return;
+  shooting=true;
+  shootBtn.disabled=true;
+  zones.forEach(z=>z.style.pointerEvents='none');
+
+  const saved = keeperSaves(selectedZone);
+  const field = document.getElementById('field');
+  const fw = field.offsetWidth;
+  const pos = zonePositions[selectedZone];
+  const leftPx = (parseFloat(pos.left)/100)*fw;
+  ball.style.bottom='230px';
+  ball.style.left=(leftPx-14)+'px';
+  ball.style.fontSize='13px';
+
+  // Move keeper
+  if(gameMode==='rapido'){
+    // keeper moves instantly
+    keeper.style.transition='left 0.05s';
+  } else {
+    keeper.style.transition='left 0.22s ease-out';
+  }
+  const keeperTarget = saved ? selectedZone : Math.floor(Math.random()*6);
+  const kpx=(parseFloat(zonePositions[keeperTarget].left)/100)*fw;
+  keeper.style.left=(kpx-14)+'px';
+  keeper.style.transform='none';
+
+  const delay = gameMode==='rapido' ? 350 : 550;
+
+  setTimeout(()=>{
+    zones[selectedZone].classList.remove('selected');
+    zones[selectedZone].classList.add(saved?'saved':'hit');
+
+    if(!saved){
+      goles++;
+      streak++;
+      showMsg('⚽ ¡GOOOOOL!');
+      flashField('#1a7a3e');
+      document.getElementById('sc1-val').textContent=goles;
+    } else {
+      fallos++;
+      streak=0;
+      showMsg('🧤 ¡Parada!');
+      flashField('#6a1a0a');
+      document.getElementById('sc2-val').textContent= gameType==='supervivencia' ? streak : fallos;
+      if(gameType==='supervivencia'){
+        lives--;
+        renderLives();
+        if(lives<=0){ setTimeout(()=>endGame(),800); return; }
       }
-      updateScores();
-      round++;
-
-      setTimeout(() => {
-        resultMsg.style.opacity = '0';
-        ball.style.bottom = '28px';
-        ball.style.left = '50%';
-        ball.style.fontSize = '30px';
-        keeper.style.left = '50%';
-        keeper.style.transform = 'translateX(-50%)';
-        zones[selectedZone].classList.remove('hit', 'saved', 'selected');
-        zones.forEach(z => z.style.pointerEvents = 'auto');
-        selectedZone = null;
-        shooting = false;
-
-        if (round > total) {
-          endGame();
-        } else {
-          document.getElementById('s-ronda').textContent = round + '/5';
-          statusBar.textContent = 'Elige una zona de la portería para disparar 🎯';
-        }
-      }, 1600);
-    }, 550);
-  }
-
-  function showMsg(txt) {
-    resultMsg.textContent = txt;
-    resultMsg.style.opacity = '1';
-  }
-
-  function flashField(color) {
-    const f = document.getElementById('field');
-    f.style.background = color;
-    setTimeout(() => f.style.background = '#2d8a4e', 300);
-  }
-
-  function updateScores() {
-    document.getElementById('s-goles').textContent = goles;
-    document.getElementById('s-fallos').textContent = fallos;
-    renderDots();
-  }
-
-  function renderDots() {
-    dotsContainer.innerHTML = '';
-    for (let i = 0; i < total; i++) {
-      const d = document.createElement('div');
-      d.className = 'dot';
-      if (i < goles) d.classList.add('gol');
-      else if (i < goles + fallos) d.classList.add('fallo');
-      dotsContainer.appendChild(d);
     }
-  }
 
-  function endGame() {
-    gameOver = true;
-    if (goles > record) {
-      record = goles;
-      localStorage.setItem('futbol-record', record);
-      document.getElementById('s-record').textContent = record;
+    if(gameType==='supervivencia'){
+      document.getElementById('sc2-val').textContent=streak;
     }
-    const pct = Math.round((goles / total) * 100);
-    const rating = pct === 100 ? '🏆 ¡Perfecto!' : pct >= 60 ? '⭐ ¡Buen trabajo!' : '💪 ¡Sigue entrenando!';
-    statusBar.innerHTML = `<strong>${goles}/${total} goles — ${rating}</strong>`;
-    shootBtn.textContent = '🔄 Jugar de nuevo';
-    shootBtn.disabled = false;
-    shootBtn.removeEventListener('click', doShoot);
-    shootBtn.addEventListener('click', resetGame);
-  }
+    round++;
+    updateRoundDisplay();
 
-  function resetGame() {
-    goles = 0; fallos = 0; round = 1; gameOver = false; selectedZone = null;
-    document.getElementById('s-goles').textContent = 0;
-    document.getElementById('s-fallos').textContent = 0;
-    document.getElementById('s-ronda').textContent = '1/5';
-    statusBar.textContent = 'Elige una zona de la portería para disparar 🎯';
-    shootBtn.textContent = '— Elige dónde disparar arriba —';
-    shootBtn.disabled = true;
-    shootBtn.removeEventListener('click', resetGame);
-    shootBtn.addEventListener('click', doShoot);
-    renderDots();
-    zones.forEach(z => { z.style.pointerEvents = 'auto'; z.className = 'zone'; });
-    ball.style.cssText = 'font-size:30px; bottom:28px; left:50%; transform:translateX(-50%); transition:all 0.5s cubic-bezier(0.2,0.8,0.4,1); position:absolute; pointer-events:none; line-height:1;';
-    keeper.style.cssText = 'font-size:30px; top:105px; left:50%; transform:translateX(-50%); transition:left 0.25s ease-out; position:absolute; pointer-events:none; line-height:1;';
+    const recover = gameMode==='rapido' ? 900 : 1500;
+    setTimeout(()=>{
+      if(gameOver) return;
+      resultMsg.style.opacity='0';
+      resetBallKeeper();
+      zones[selectedZone].classList.remove('hit','saved','selected');
+      zones.forEach(z=>z.style.pointerEvents='auto');
+      if(gameType==='muro') applyWalls();
+      if(gameMode==='caos') shuffleGoal();
+      selectedZone=null;
+      shooting=false;
+      shootBtn.textContent='— Elige dónde disparar —';
+      shootBtn.disabled=true;
+      statusBar.textContent='Elige una zona y dispara 🎯';
+
+      if(gameType==='penaltis' && round>totalRounds) endGame();
+      else if(gameType==='contrarreloj' && !timerRunning) {}
+      else renderDots();
+    }, recover);
+  }, delay);
+}
+
+function updateRoundDisplay(){
+  const sc3 = document.getElementById('sc3-val');
+  if(gameType==='penaltis') sc3.textContent=Math.min(round,totalRounds)+'/'+totalRounds;
+  else if(gameType==='supervivencia') sc3.textContent='x'+lives+'❤️';
+  else if(gameType==='contrarreloj') {} // timer handles it
+  else if(gameType==='muro') sc3.textContent=round;
+}
+
+// ========= CAOS mode: shuffle goal zones =========
+function shuffleGoal(){
+  const goal = document.getElementById('goal');
+  const order = [0,1,2,3,4,5].sort(()=>Math.random()-0.5);
+  const zoneEls = goal.querySelectorAll('.zone');
+  order.forEach((newIdx, pos)=>{
+    zoneEls[pos].setAttribute('data-z', newIdx);
+  });
+}
+
+function showMsg(txt){
+  resultMsg.textContent=txt;
+  resultMsg.style.opacity='1';
+  resultMsg.classList.remove('pop');
+  void resultMsg.offsetWidth;
+  resultMsg.classList.add('pop');
+}
+
+function flashField(color){
+  const f=document.getElementById('field');
+  f.style.background=color;
+  setTimeout(()=>f.style.background='#2d8a4e',280);
+}
+
+function renderDots(){
+  const row=document.getElementById('dots-row');
+  row.innerHTML='';
+  if(gameType!=='penaltis') return;
+  for(let i=0;i<totalRounds;i++){
+    const d=document.createElement('div');
+    d.className='dot';
+    if(i<goles) d.classList.add('gol');
+    else if(i<goles+fallos) d.classList.add('fallo');
+    row.appendChild(d);
   }
+}
+
+function updateRecord(){
+  const key=gameType+'-'+gameDiff;
+  document.getElementById('sc-record').textContent=record[key]||0;
+}
+
+// ========= END =========
+function endGame(){
+  clearTimerInterval();
+  gameOver=true;
+  shooting=false;
+  const total=goles+fallos;
+  const pct=total>0?Math.round((goles/total)*100):0;
+  const key=gameType+'-'+gameDiff;
+  const prev=record[key]||0;
+  const newRecord=goles>prev;
+  if(newRecord){ record[key]=goles; try{localStorage.setItem(RKEY,JSON.stringify(record));}catch(e){} }
+
+  document.getElementById('r-goles').textContent=goles;
+  document.getElementById('r-fallos').textContent=fallos;
+  document.getElementById('r-pct').textContent=pct+'%';
+  document.getElementById('r-record').textContent=record[key]||0;
+
+  let trophy='🥅', title='Finalizado', sub='';
+  if(pct===100){ trophy='🏆'; title='¡PERFECTO!'; sub='Invencible en la portería'; }
+  else if(pct>=80){ trophy='⭐'; title='¡Excelente!'; sub='Eres un crack'; }
+  else if(pct>=60){ trophy='😊'; title='¡Buen trabajo!'; sub='Sigue practicando'; }
+  else if(pct>=40){ trophy='😅'; title='Puedes mejorar'; sub='Falta práctica'; }
+  else { trophy='😬'; title='Sigue intentando'; sub='El portero ganó hoy'; }
+  if(newRecord && goles>0){ sub += ' · 🔥 ¡Nuevo récord!'; }
+
+  document.getElementById('r-trophy').textContent=trophy;
+  document.getElementById('r-title').textContent=title;
+  document.getElementById('r-sub').textContent=sub;
+
+  setTimeout(()=>showScreen('results'), 600);
+}
+
+// ========= Init =========
+showScreen('menu');
 </script>
 </body>
 </html>
